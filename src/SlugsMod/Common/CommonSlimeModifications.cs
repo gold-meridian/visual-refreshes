@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using Terraria.GameContent;
 using Terraria.ID;
+using Terraria.Localization;
 
 namespace SlugsMod.Common;
 
@@ -11,6 +12,8 @@ namespace SlugsMod.Common;
 [UsedImplicitly]
 internal sealed class CommonSlimeModifications : GlobalNPC {
     private bool _wasAirborneLastFrame;
+    private float _frameCounter;
+    private int _frame;
     
     public override bool AppliesToEntity(NPC entity, bool lateInstantiation) => entity.type 
         is NPCID.BlueSlime;
@@ -21,7 +24,11 @@ internal sealed class CommonSlimeModifications : GlobalNPC {
     static void ReplaceTextures() {
         TextureAssets.Npc[NPCID.BlueSlime] = Assets.Images.NPCs.CommonSlime.Asset;
     }
-    
+
+    public override void SetStaticDefaults() {
+        Main.npcFrameCount[NPCID.BlueSlime] = 6;
+    }
+
     public override void PostAI(NPC npc) {
         if (npc.velocity.X != 0) {
             npc.spriteDirection = (npc.velocity.X > 0 ? 1 : -1);
@@ -56,8 +63,41 @@ internal sealed class CommonSlimeModifications : GlobalNPC {
                 Main.Transform
             );
         }
-        
 
         return base.PreDraw(npc, spriteBatch, screenPos, drawColor);
+    }
+    
+    public override void FindFrame(NPC npc, int frameHeight) {
+        const int idleFrame1 = 0;
+        const int idleFrame2 = 1;
+        const int aboutToJumpFrame = 3;
+        const int jumpUpFrame = 5;
+        const int jumpDownFrame = 4;
+        const int animationSpeed = 8;
+
+        if (npc.velocity.Y < 0f) {
+            _frame = jumpUpFrame;
+        }
+        else if (npc.velocity.Y > 0f) {
+            _frame = jumpDownFrame;
+        }
+        else {
+            if (npc.ai[0] >= -30f && npc.ai[0] < 0f) {
+                _frame = aboutToJumpFrame;
+            }
+            else {
+                _frameCounter += 1.0f;
+                if (_frameCounter > animationSpeed) {
+                    _frameCounter = 0;
+                    _frame++;
+                }
+
+                if (_frame > idleFrame2) {
+                    _frame = idleFrame1;
+                }
+            }
+        }
+        
+        npc.frame.Y = _frame * frameHeight;
     }
 }
