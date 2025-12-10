@@ -1,0 +1,9 @@
+﻿displayName = TreesMod
+author = mathica, tobias
+version = 0.0.1
+hideCode = true
+hideResources = true
+includeSource = false
+includePDB = true
+
+modReferences = Daybreak

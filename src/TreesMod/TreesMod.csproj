@@ -1,0 +1,25 @@
+﻿<Project Sdk="Tomat.Terraria.ModLoader.Sdk/1.0.9">
+
+	<PropertyGroup>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+
+        <TmlBuildUseDefaultModImpl>true</TmlBuildUseDefaultModImpl>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Publicize Include="FNA" IncludeCompilerGeneratedMembers="false" IncludeVirtualMembers="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="lib\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Daybreak">
+        <HintPath>lib\Daybreak.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

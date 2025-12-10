@@ -1,0 +1,13 @@
+﻿global using Microsoft.Xna.Framework;
+global using Microsoft.Xna.Framework.Graphics;
+global using Terraria;
+global using Terraria.ModLoader;
+
+namespace TreesMod;
+
+partial class ModImpl : Mod {
+    public ModImpl() {
+        MusicAutoloadingEnabled = false;
+        CloudAutoloadingEnabled = false;
+    }
+}

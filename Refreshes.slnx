@@ -4,4 +4,5 @@
     <File Path=".github\readme.md" />
   </Folder>
   <Project Path="src\SlugsMod\SlugsMod.csproj" />
+  <Project Path="src\TreesMod\TreesMod.csproj" />
 </Solution>
