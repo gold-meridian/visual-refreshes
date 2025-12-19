@@ -1,9 +1,17 @@
-﻿namespace Refreshes;
+using Daybreak.Common.Features.Authorship;
+using Daybreak.Common.Features.ModPanel;
 
-partial class ModImpl
+namespace Refreshes;
+
+partial class ModImpl : IHasCustomAuthorMessage
 {
     public ModImpl()
     {
         MusicAutoloadingEnabled = false;
+    }
+
+    string IHasCustomAuthorMessage.GetAuthorText()
+    {
+        return AuthorText.GetAuthorTooltip(this, Mods.Refreshes.UI.ModIcon.AuthorHeader.GetTextValue());
     }
 }
