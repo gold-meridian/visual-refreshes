@@ -5,7 +5,7 @@ using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
 using Terraria.Utilities;
 
-namespace Refreshes.Common;
+namespace Refreshes.Content;
 
 [UsedImplicitly]
 internal sealed class TreeProfileRendering {
