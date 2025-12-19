@@ -234,16 +234,20 @@ internal sealed class TreeProfileRendering
                         {
                             const int x_offset = 1;
 
-                            var num9 = x;
+                            // TODO: Sydney should just make this configurable?
+                            self.EmitTreeLeaves(x, y, x + x_offset, floorY);
 
-                            self.EmitTreeLeaves(x, y, num9 + x_offset, floorY);
-                            if (treeStyle == 14)
+                            // Emit light from glowing mushroom tree tops.
+                            if (treeStyle == (int)VanillaTreeStyle.GlowingMushroom1)
                             {
-                                var num11 = self._rand.Next(28, 42) * 0.005f;
-                                num11 += (270 - Main.mouseTextColor) / 1000f;
                                 if (tile.color() == 0)
                                 {
-                                    Lighting.AddLight(x, y, 0.1f, 0.2f + num11 / 2f, 0.7f + num11);
+                                    var colorIntensity = self._rand.Next(28, 42) * 0.005f;
+                                    {
+                                        colorIntensity += (270 - Main.mouseTextColor) / 1000f;
+                                    }
+
+                                    Lighting.AddLight(x, y, 0.1f, 0.2f + colorIntensity / 2f, 0.7f + colorIntensity);
                                 }
                                 else
                                 {
@@ -255,43 +259,48 @@ internal sealed class TreeProfileRendering
                                 }
                             }
 
-                            var tileColor2 = tile.color();
-                            var treeBranchTexture2 = self.GetTreeBranchTexture(treeStyle, 0, tileColor2);
-                            var position2 = new Vector2(x * 16, y * 16) - screenPosition.Floor() + zero +
-                                            new Vector2(16f, 12f);
-                            var num12 = 0f;
-                            if (!hasWall)
+                            var tileColor = tile.color();
+                            var branchTexture = treeProfile.GetBranch(tileColor);
+                            var branchPos = new Vector2(x * 16, y * 16) - screenPosition.Floor() + new Vector2(16f, 12f);
+
+                            var windIntensity = hasWall ? 0f : self.GetWindCycle(x, y, self._treeWindCounter);
                             {
-                                num12 = self.GetWindCycle(x, y, self._treeWindCounter);
+                                if (windIntensity > 0f)
+                                {
+                                    branchPos.X += windIntensity;
+                                }
+
+                                branchPos.X += Math.Abs(windIntensity) * 2f;
                             }
 
-                            //tree branch pos sway (remove later)
-                            if (num12 > 0f)
-                            {
-                                position2.X += num12;
-                            }
-
-                            position2.X += Math.Abs(num12) * 2f;
-                            var color4 = Lighting.GetColor(x, y);
+                            var tileLight = Lighting.GetColor(x, y);
                             if (tile.fullbrightBlock())
                             {
-                                color4 = Color.White;
+                                tileLight = Color.White;
                             }
 
-                            //left branch
-                            Main.spriteBatch.Draw(treeBranchTexture2, position2, new Rectangle(0, treeFrame * 42, 40, 40), color4, num12 * branch_sway_factor, new Vector2(40f, 24f), 1f, SpriteEffects.None, 0f);
+                            Main.spriteBatch.Draw(
+                                branchTexture,
+                                branchPos,
+                                new Rectangle(0, treeFrame * 42, 40, 40),
+                                tileLight,
+                                windIntensity * branch_sway_factor,
+                                new Vector2(40f, 24f),
+                                1f,
+                                SpriteEffects.None,
+                                0f
+                            );
 
-                            //ashtree left branch
-                            if (type == 634)
+                            if (type == TileID.TreeAsh)
                             {
-                                var value2 = TextureAssets.GlowMask[317].Value;
-                                var white2 = Color.White;
+                                var ashBranchGlow = TextureAssets.GlowMask[GlowMaskID.TreeAshBranches].Value;
+
                                 Main.spriteBatch.Draw(
-                                    value2,
-                                    position2,
+                                    ashBranchGlow,
+                                    branchPos,
                                     new Rectangle(0, treeFrame * 42, 40, 40),
-                                    white2,
-                                    num12 * branch_sway_factor,
+                                    Color.White,
+                                    windIntensity * branch_sway_factor,
                                     new Vector2(40f, 24f),
                                     1f,
                                     SpriteEffects.None,
@@ -307,16 +316,20 @@ internal sealed class TreeProfileRendering
                         {
                             const int x_offset = -1;
 
-                            var num5 = x;
+                            // TODO: Sydney should just make this configurable?
+                            self.EmitTreeLeaves(x, y, x + x_offset, floorY);
 
-                            self.EmitTreeLeaves(x, y, num5 + x_offset, floorY);
-                            if (treeStyle == 14)
+                            // Emit light from glowing mushroom tree tops.
+                            if (treeStyle == (int)VanillaTreeStyle.GlowingMushroom1)
                             {
-                                var num7 = self._rand.Next(28, 42) * 0.005f;
-                                num7 += (270 - Main.mouseTextColor) / 1000f;
                                 if (tile.color() == 0)
                                 {
-                                    Lighting.AddLight(x, y, 0.1f, 0.2f + num7 / 2f, 0.7f + num7);
+                                    var colorIntensity = self._rand.Next(28, 42) * 0.005f;
+                                    {
+                                        colorIntensity += (270 - Main.mouseTextColor) / 1000f;
+                                    }
+
+                                    Lighting.AddLight(x, y, 0.1f, 0.2f + colorIntensity / 2f, 0.7f + colorIntensity);
                                 }
                                 else
                                 {
@@ -329,51 +342,47 @@ internal sealed class TreeProfileRendering
                             }
 
                             var tileColor = tile.color();
-                            var treeBranchTexture = self.GetTreeBranchTexture(treeStyle, 0, tileColor);
-                            var position = new Vector2(x * 16, y * 16) - screenPosition.Floor() + zero +
-                                           new Vector2(0f, 18f);
-                            var num8 = 0f;
-                            if (!hasWall)
+                            var branchTexture = treeProfile.GetBranch(tileColor);
+                            var branchPos = new Vector2(x * 16, y * 16) - screenPosition.Floor() + new Vector2(0f, 18f);
+
+                            var windIntensity = hasWall ? 0f : self.GetWindCycle(x, y, self._treeWindCounter);
                             {
-                                num8 = self.GetWindCycle(x, y, self._treeWindCounter);
+                                if (windIntensity < 0f)
+                                {
+                                    branchPos.X += windIntensity;
+                                }
+
+                                branchPos.X -= Math.Abs(windIntensity) * 2f;
                             }
 
-                            if (num8 < 0f)
-                            {
-                                position.X += num8;
-                            }
-
-                            position.X -= Math.Abs(num8) * 2f;
-                            var color2 = Lighting.GetColor(x, y);
+                            var tileLight = Lighting.GetColor(x, y);
                             if (tile.fullbrightBlock())
                             {
-                                color2 = Color.White;
+                                tileLight = Color.White;
                             }
 
-                            //right branch
                             Main.spriteBatch.Draw(
-                                treeBranchTexture,
-                                position,
+                                branchTexture,
+                                branchPos,
                                 new Rectangle(42, treeFrame * 42, 40, 40),
-                                color2,
-                                num8 * branch_sway_factor,
+                                tileLight,
+                                windIntensity * branch_sway_factor,
                                 new Vector2(0f, 30f),
                                 1f,
                                 SpriteEffects.None,
                                 0f
                             );
 
-                            //ashtree right branch
-                            if (type == 634)
+                            if (type == TileID.TreeAsh)
                             {
-                                var value = TextureAssets.GlowMask[317].Value;
-                                var white = Color.White;
+                                var ashBranchGlow = TextureAssets.GlowMask[GlowMaskID.TreeAshBranches].Value;
+
                                 Main.spriteBatch.Draw(
-                                    value,
-                                    position,
+                                    ashBranchGlow,
+                                    branchPos,
                                     new Rectangle(42, treeFrame * 42, 40, 40),
-                                    white,
-                                    num8 * branch_sway_factor,
+                                    Color.White,
+                                    windIntensity * branch_sway_factor,
                                     new Vector2(0f, 30f),
                                     1f,
                                     SpriteEffects.None,
@@ -404,6 +413,7 @@ internal sealed class TreeProfileRendering
                         _ => 0,
                     };
 
+                    // Oasis tree
                     if (palmBiome is >= 4 and <= 7)
                     {
                         palmTopIdx = 21;
