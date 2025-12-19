@@ -9,7 +9,7 @@ namespace TreesMod.Common;
 
 public record struct TreetopVariation(int Width, int Height, Vector2 OriginOffset = default);
 
-public readonly record struct TreetopStyleProfile(int PaintIdx, Asset<Texture2D> TopTexture, Asset<Texture2D> BranchTexture, TreetopVariation[] Variations = null!) {
+public readonly record struct TreeStyleProfile(int PaintIdx, Asset<Texture2D> TopTexture, Asset<Texture2D> BranchTexture, TreetopVariation[] Variations = null!) {
     public TreetopVariation GetVariation(int frame) => Variations[frame % Variations.Length];
     
     public Texture2D GetTop(int paintColor) {
@@ -21,7 +21,7 @@ public readonly record struct TreetopStyleProfile(int PaintIdx, Asset<Texture2D>
 public static class TreetopProfiles {
     private const int treetop_resize_buffer = 128;
     
-    public static readonly Dictionary<int, TreetopStyleProfile> Profiles = new();
+    public static readonly Dictionary<int, TreeStyleProfile> Profiles = new();
 
     public static int VanillaTreetopCount;
     
@@ -204,6 +204,6 @@ public static class TreetopProfiles {
         #endregion
     }
 
-    public static bool TryGetProfile(int style, out TreetopStyleProfile profile) 
+    public static bool TryGetProfile(int style, out TreeStyleProfile profile) 
         => Profiles.TryGetValue(style, out profile);
 }
