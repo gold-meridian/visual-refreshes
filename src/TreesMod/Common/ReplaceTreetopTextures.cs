@@ -1,11 +1,8 @@
 ﻿using Daybreak.Common.Features.Hooks;
 using JetBrains.Annotations;
-using MonoMod.Cil;
-using ReLogic.Content;
 using System;
 using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
-using Terraria.ID;
 using Terraria.Utilities;
 
 namespace TreesMod.Common;
@@ -88,16 +85,16 @@ internal sealed class ReplaceTreetopTextures {
                             
                             //treestyle == 14 = giant mushroom tree
                             if(treeStyle3 == 14) {
-                                float num14 = (float)self._rand.Next(28, 42) * 0.005f;
-                                num14 += (float)(270 - Main.mouseTextColor) / 1000f;
+                                float num14 = self._rand.Next(28, 42) * 0.005f;
+                                num14 += (270 - Main.mouseTextColor) / 1000f;
                                 if(tile.color() == 0) {
                                     Lighting.AddLight(x, y, 0.1f, 0.2f + num14 / 2f, 0.7f + num14);
                                 }
                                 else {
                                     Color color5 = WorldGen.paintColor(tile.color());
-                                    float r3 = (float)(int)color5.R / 255f;
-                                    float g3 = (float)(int)color5.G / 255f;
-                                    float b3 = (float)(int)color5.B / 255f;
+                                    float r3 = color5.R / 255f;
+                                    float g3 = color5.G / 255f;
+                                    float b3 = color5.B / 255f;
                                     Lighting.AddLight(x, y, r3, g3, b3);
                                 }
                             }
@@ -111,43 +108,50 @@ internal sealed class ReplaceTreetopTextures {
 
                             vector.X += num15 * 2f;
                             vector.Y += Math.Abs(num15) * 2f;
+                            
                             Color color6 = Lighting.GetColor(x, y);
                             if(tile.fullbrightBlock())
                                 color6 = Color.White;
 
                             TreetopProfiles.TryGetProfile(treeStyle3, out var profile);
-
-                            Vector2 origin;
-                            Rectangle rect;
-                            //hardcoded big tree style, todo: reimplement using profiles when ready
-                            // if (treeStyle3 == 0 && seededRandom.NextFloat() < customRectChance) {
-                            //     rect = new Rectangle(0, 0, 216, 190);
-                            //     vector.X -= 2;
-                            //     vector.Y += 4;
-                            //
-                            //     origin = new Vector2(216 / 2, 190);
-                            //     
-                            //     num15 = self.GetWindCycle(x, y, self._treeWindCounter) * 0.5f;
-                            //
-                            //     //treeTopTexture = Assets.Images.Content.Trees.Tree_Tops_0.Asset.Value;
-                            //     treeTopTexture = profile.GetTop(tile.color());
-                            // } else {
-                            //     rect = new Rectangle(treeFrame * (topTextureFrameWidth3 + 2), 0, topTextureFrameWidth3, topTextureFrameHeight3);
-                            //
-                            //     origin = new Vector2(topTextureFrameWidth3 / 2, topTextureFrameHeight3);
-                            // }
-                            
-                            rect = new Rectangle(treeFrame * (topTextureFrameWidth3 + 2), 0, topTextureFrameWidth3, topTextureFrameHeight3);
-
-                            origin = new Vector2(topTextureFrameWidth3 / 2, topTextureFrameHeight3);
-                            
                             var variation = profile.GetVariation(treeFrame);
+
+                            Rectangle rect = new(treeFrame * (variation.Width + 2), 0, variation.Width, variation.Height);
+                            Vector2 origin = new(variation.Width / 2, variation.Height);
                             
-                            Main.spriteBatch.Draw(profile.GetTop(tileColor3), vector,
-                                rect, color6, num15 * num3,
-                                origin + variation.OriginOffset, 1f, SpriteEffects.None,
+                            #region reimpl
+                            //hardcoded big tree style, todo: reimplement using profiles when ready
+                            /*if (treeStyle3 == 0 && seededRandom.NextFloat() < customRectChance) {
+                                rect = new Rectangle(0, 0, 216, 190);
+                                vector.X -= 2;
+                                vector.Y += 4;
+
+                                origin = new Vector2(216 / 2, 190);
+
+                                num15 = self.GetWindCycle(x, y, self._treeWindCounter) * 0.5f;
+
+                                //treeTopTexture = Assets.Images.Content.Trees.Tree_Tops_0.Asset.Value;
+                                treeTopTexture = profile.GetTop(tile.color());
+                            } else {
+                                rect = new Rectangle(treeFrame * (topTextureFrameWidth3 + 2), 0, topTextureFrameWidth3, topTextureFrameHeight3);
+
+                                origin = new Vector2(topTextureFrameWidth3 / 2, topTextureFrameHeight3);
+                            }*/
+                            #endregion
+                            
+                            // draw treetop
+                            Main.spriteBatch.Draw(
+                                profile.GetTop(tileColor3), 
+                                vector,
+                                rect, 
+                                color6, 
+                                num15 * num3,
+                                origin + variation.OriginOffset, 
+                                1f,
+                                SpriteEffects.None,
                                 0f);
                             
+                            //ashtree, tbd
                             if(type == 634) {
                                 Texture2D value3 = TextureAssets.GlowMask[316].Value;
                                 Color white3 = Color.White;

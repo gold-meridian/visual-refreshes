@@ -36,7 +36,6 @@ public static class TreetopProfiles {
         }
     }
     
-    
     [OnUnload, UsedImplicitly]
     static void RevertTextureArrays() {
         if (VanillaTreetopCount > 0) {
@@ -52,8 +51,6 @@ public static class TreetopProfiles {
     
     [OnLoad, UsedImplicitly]
     static void Load() {
-        //TextureAssets.TreeTop[60] = Assets.Images.Content.Trees.Tree_Tops_0.Asset;
-
         #region Forest Trees
 
         // for some reason, default forest treetop is idx 0, and the rest are 6 through 10 :\ annoying, but workable atleast
@@ -63,9 +60,9 @@ public static class TreetopProfiles {
             TopTexture: TextureAssets.TreeTop[0],
             BranchTexture: TextureAssets.TreeBranch[0],
             Variations: new TreetopVariation[] {
-                new(82, 82, Vector2.Zero),
-                new(82, 82, Vector2.Zero),
-                new(82, 82, Vector2.Zero)
+                new(80, 80, Vector2.Zero),
+                new(80, 80, Vector2.Zero),
+                new(80, 80, Vector2.Zero)
             }
         );
         
@@ -75,12 +72,134 @@ public static class TreetopProfiles {
                 TopTexture: TextureAssets.TreeTop[i],
                 BranchTexture: TextureAssets.TreeBranch[i],
                 Variations: new TreetopVariation[] {
-                    new(82, 82, Vector2.Zero),
-                    new(82, 82, Vector2.Zero),
-                    new(82, 82, Vector2.Zero)
+                    new(80, 80, Vector2.Zero),
+                    new(80, 80, Vector2.Zero),
+                    new(80, 80, Vector2.Zero)
                 }
             );
         }
+
+        #endregion
+
+        #region Vanity Trees
+
+        // sakura
+        Profiles[29] = new (
+            PaintIdx: 29,
+            TopTexture: TextureAssets.TreeTop[29],
+            BranchTexture: TextureAssets.TreeBranch[29],
+            Variations: new TreetopVariation[] {
+                new(118, 96, Vector2.Zero),
+                new(118, 96, Vector2.Zero),
+                new(118, 96, Vector2.Zero)
+            }
+        );
+        
+        // willow
+        Profiles[30] = new (
+            PaintIdx: 30,
+            TopTexture: TextureAssets.TreeTop[30],
+            BranchTexture: TextureAssets.TreeBranch[30],
+            Variations: new TreetopVariation[] {
+                new(118, 96, Vector2.Zero),
+                new(118, 96, Vector2.Zero),
+                new(118, 96, Vector2.Zero)
+            }
+        );
+
+        #endregion
+
+        #region Tundra Trees
+
+        for(int i = 16; i <= 18; i++) {
+            Profiles[i] = new (
+                PaintIdx: i,
+                TopTexture: TextureAssets.TreeTop[i],
+                BranchTexture: TextureAssets.TreeBranch[i],
+                Variations: new TreetopVariation[] {
+                    new(80, 80, Vector2.Zero),
+                    new(80, 80, Vector2.Zero),
+                    new(80, 80, Vector2.Zero)
+                }
+            );
+        }
+
+        #endregion
+
+        #region Jungle Trees
+
+        Profiles[2] = new (
+            PaintIdx: 2,
+            TopTexture: TextureAssets.TreeTop[2],
+            BranchTexture: TextureAssets.TreeBranch[2],
+            Variations: new TreetopVariation[] {
+                new(114, 96, Vector2.Zero),
+                new(114, 96, Vector2.Zero),
+                new(114, 96, Vector2.Zero)
+            }
+        );
+        
+        Profiles[11] = new (
+            PaintIdx: 11,
+            TopTexture: TextureAssets.TreeTop[11],
+            BranchTexture: TextureAssets.TreeBranch[11],
+            Variations: new TreetopVariation[] {
+                new(116, 96, Vector2.Zero),
+                new(116, 96, Vector2.Zero),
+                new(116, 96, Vector2.Zero)
+            }
+        );
+        
+        Profiles[13] = new (
+            PaintIdx: 13,
+            TopTexture: TextureAssets.TreeTop[13],
+            BranchTexture: TextureAssets.TreeBranch[13],
+            Variations: new TreetopVariation[] {
+                new(116, 96, Vector2.Zero),
+                new(116, 96, Vector2.Zero),
+                new(116, 96, Vector2.Zero)
+            }
+        );
+
+        #endregion
+
+        #region Misc
+
+        // corrupt tree
+        Profiles[1] = new (
+            PaintIdx: 1,
+            TopTexture: TextureAssets.TreeTop[1],
+            BranchTexture: TextureAssets.TreeBranch[1],
+            Variations: new TreetopVariation[] {
+                new(80, 80, Vector2.Zero),
+                new(80, 80, Vector2.Zero),
+                new(80, 80, Vector2.Zero)
+            }
+        );
+        
+        // crimson tree
+        Profiles[5] = new (
+            PaintIdx: 5,
+            TopTexture: TextureAssets.TreeTop[5],
+            BranchTexture: TextureAssets.TreeBranch[5],
+            Variations: new TreetopVariation[] {
+                new(80, 80, Vector2.Zero),
+                new(80, 80, Vector2.Zero),
+                new(80, 80, Vector2.Zero)
+            }
+        );
+        
+        // giant mushroom
+        Profiles[14] = new (
+            PaintIdx: 14,
+            TopTexture: TextureAssets.TreeTop[14],
+            BranchTexture: TextureAssets.TreeBranch[14],
+            Variations: new TreetopVariation[] {
+                new(80, 80, Vector2.Zero),
+                new(80, 80, Vector2.Zero),
+                new(80, 80, Vector2.Zero)
+            }
+        );
 
         #endregion
     }
