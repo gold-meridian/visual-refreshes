@@ -3,7 +3,7 @@ global using Microsoft.Xna.Framework.Graphics;
 global using Terraria;
 global using Terraria.ModLoader;
 
-namespace TreesMod;
+namespace Refreshes;
 
 partial class ModImpl {
     public ModImpl() {

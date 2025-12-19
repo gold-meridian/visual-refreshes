@@ -3,6 +3,6 @@
   <Folder Name="/.github/">
     <File Path=".github\readme.md" />
   </Folder>
+  <Project Path="src/Refreshes/Refreshes.csproj" />
   <Project Path="src\SlugsMod\SlugsMod.csproj" />
-  <Project Path="src\TreesMod\TreesMod.csproj" />
 </Solution>

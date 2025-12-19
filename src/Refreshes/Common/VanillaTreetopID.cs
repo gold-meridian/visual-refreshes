@@ -1,4 +1,4 @@
-﻿namespace TreesMod.Common;
+﻿namespace Refreshes.Common;
 
 public enum VanillaTreeStyleID {
     Unknown,

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Terraria.GameContent;
 
-namespace TreesMod.Common;
+namespace Refreshes.Common;
 
 public record struct TreetopVariation(int Width, int Height, Vector2 OriginOffset = default);
 
