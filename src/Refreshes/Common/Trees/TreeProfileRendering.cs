@@ -7,6 +7,8 @@ using Terraria.ID;
 
 namespace Refreshes.Common;
 
+// TODO: Re-add paint support for gem trees.
+
 [UsedImplicitly]
 internal sealed class TreeProfileRendering
 {
@@ -97,6 +99,7 @@ internal sealed class TreeProfileRendering
                     }
 
                     var treeProfile = TreeProfiles.GetTreeProfile(treeStyle);
+                    var gemProfile = GemTreeVanityProfiles.GetProfile(tile.TileType);
 
                     switch (frameX)
                     {
@@ -183,13 +186,10 @@ internal sealed class TreeProfileRendering
                                 origin = new Vector2(topTextureFrameWidth3 / 2, topTextureFrameHeight3);
                             }*/
 
-                            /*
-                            var gemProfile = GemTreeVanityProfiles.GetProfile(tile.TileType);
                             if (gemProfile.HasValue && GemTreeRendering.RenderCtx.HasValue)
                             {
                                 topTexture = gemProfile.Value.GetDescription(GemTreeRendering.RenderCtx.Value.CurrentBiome).Tops.Value;
                             }
-                            */
 
                             // draw treetop
                             Main.spriteBatch.Draw(
@@ -203,6 +203,21 @@ internal sealed class TreeProfileRendering
                                 SpriteEffects.None,
                                 0f
                             );
+
+                            if (gemProfile.HasValue && GemTreeRendering.RenderCtx.HasValue)
+                            {
+                                Main.spriteBatch.Draw(
+                                    (gemProfile.Value.GetDescription(GemTreeRendering.RenderCtx.Value.CurrentBiome).TopsGems ?? gemProfile.Value.Purity.TopsGems!).Value,
+                                    topPos,
+                                    sourceRect,
+                                    tileLight * (GemTreeRendering.GlowingGemsEnabled ? 2f : 1f),
+                                    windIntensity * treetop_sway_factor,
+                                    origin + variation.OriginOffset,
+                                    1f,
+                                    SpriteEffects.None,
+                                    0f
+                                );
+                            }
 
                             if (type == TileID.TreeAsh)
                             {
@@ -279,6 +294,11 @@ internal sealed class TreeProfileRendering
                                 tileLight = Color.White;
                             }
 
+                            if (gemProfile.HasValue && GemTreeRendering.RenderCtx.HasValue)
+                            {
+                                branchTexture = gemProfile.Value.GetDescription(GemTreeRendering.RenderCtx.Value.CurrentBiome).Branches.Value;
+                            }
+
                             Main.spriteBatch.Draw(
                                 branchTexture,
                                 branchPos,
@@ -290,6 +310,21 @@ internal sealed class TreeProfileRendering
                                 SpriteEffects.None,
                                 0f
                             );
+
+                            if (gemProfile.HasValue && GemTreeRendering.RenderCtx.HasValue)
+                            {
+                                Main.spriteBatch.Draw(
+                                    (gemProfile.Value.GetDescription(GemTreeRendering.RenderCtx.Value.CurrentBiome).BranchesGems ?? gemProfile.Value.Purity.BranchesGems!).Value,
+                                    branchPos,
+                                    new Rectangle(0, treeFrame * 42, 40, 40),
+                                    tileLight * (GemTreeRendering.GlowingGemsEnabled ? 2f : 1f),
+                                    windIntensity * branch_sway_factor,
+                                    new Vector2(40f, 24f),
+                                    1f,
+                                    SpriteEffects.None,
+                                    0f
+                                );
+                            }
 
                             if (type == TileID.TreeAsh)
                             {
@@ -361,6 +396,11 @@ internal sealed class TreeProfileRendering
                                 tileLight = Color.White;
                             }
 
+                            if (gemProfile.HasValue && GemTreeRendering.RenderCtx.HasValue)
+                            {
+                                branchTexture = gemProfile.Value.GetDescription(GemTreeRendering.RenderCtx.Value.CurrentBiome).Branches.Value;
+                            }
+
                             Main.spriteBatch.Draw(
                                 branchTexture,
                                 branchPos,
@@ -372,6 +412,21 @@ internal sealed class TreeProfileRendering
                                 SpriteEffects.None,
                                 0f
                             );
+
+                            if (gemProfile.HasValue && GemTreeRendering.RenderCtx.HasValue)
+                            {
+                                Main.spriteBatch.Draw(
+                                    (gemProfile.Value.GetDescription(GemTreeRendering.RenderCtx.Value.CurrentBiome).BranchesGems ?? gemProfile.Value.Purity.BranchesGems!).Value,
+                                    branchPos,
+                                    new Rectangle(42, treeFrame * 42, 40, 40),
+                                    tileLight * (GemTreeRendering.GlowingGemsEnabled ? 2f : 1f),
+                                    windIntensity * branch_sway_factor,
+                                    new Vector2(0f, 30f),
+                                    1f,
+                                    SpriteEffects.None,
+                                    0f
+                                );
+                            }
 
                             if (type == TileID.TreeAsh)
                             {
