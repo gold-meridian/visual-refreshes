@@ -27,17 +27,27 @@ public static class TreetopProfiles {
     
     [OnLoad, UsedImplicitly]
     static void ResizeTextureArrays() {
-        VanillaTreetopCount = TextureAssets.TreeTop.Length;
+        if (VanillaTreetopCount == 0) {
+            VanillaTreetopCount = TextureAssets.TreeTop.Length;
+        }
         
-        Array.Resize(ref TextureAssets.TreeTop, treetop_resize_buffer);
+        if (TextureAssets.TreeTop.Length < treetop_resize_buffer) {
+            Array.Resize(ref TextureAssets.TreeTop, treetop_resize_buffer);
+        }
     }
     
     
     [OnUnload, UsedImplicitly]
     static void RevertTextureArrays() {
-        int totalTreetopCount = TextureAssets.TreeTop.Length;
-        
-        Array.Resize(ref TextureAssets.TreeTop, treetop_resize_buffer);
+        if (VanillaTreetopCount > 0) {
+            for (int i = VanillaTreetopCount; i < TextureAssets.TreeTop.Length; i++) {
+                TextureAssets.TreeTop[i] = null;
+            }
+
+            Array.Resize(ref TextureAssets.TreeTop, VanillaTreetopCount);
+        }
+
+        Profiles.Clear();
     }
     
     [OnLoad, UsedImplicitly]
