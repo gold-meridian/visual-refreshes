@@ -1,5 +1,8 @@
 <Solution>
-  <Project Path="daybreak-mod/src/Daybreak/Daybreak.csproj" />
+  <Folder Name="/daybreak-mod/">
+    <Project Path="daybreak-mod/src/Daybreak.CodeAnalysis/Daybreak.CodeAnalysis.csproj" />
+    <Project Path="daybreak-mod/src/Daybreak/Daybreak.csproj" />
+  </Folder>
   <Project Path="Refreshes/Refreshes.csproj" />
   <Project Path="SlugsMod/SlugsMod.csproj" />
 </Solution>

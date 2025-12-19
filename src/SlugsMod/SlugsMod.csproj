@@ -1,6 +1,6 @@
-﻿<Project Sdk="Tomat.Terraria.ModLoader.Sdk/1.0.9">
+﻿<Project Sdk="Tomat.Terraria.ModLoader.Sdk">
 
-	<PropertyGroup>
+    <PropertyGroup>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
 
@@ -9,11 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Publicize Include="FNA" IncludeCompilerGeneratedMembers="false" IncludeVirtualMembers="false" />
+        <Publicize Include="FNA" IncludeCompilerGeneratedMembers="false" IncludeVirtualMembers="false"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\daybreak-mod\src\Daybreak\Daybreak.csproj"/>
+        <ProjectReference Include="..\daybreak-mod\src\Daybreak.CodeAnalysis\Daybreak.CodeAnalysis.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" OutputItemType="Analyzer"/>
     </ItemGroup>
 
 </Project>
