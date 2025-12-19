@@ -89,30 +89,62 @@ public readonly record struct TreeStyleProfile(
 public static class TreeProfiles
 {
     private static readonly List<TreeStyleProfile> profiles = Enumerable.Repeat(default(TreeStyleProfile), (int)VanillaTreeStyle.Count).ToList();
+    private static readonly Dictionary<int, TreeStyleProfile> altProfiles = new();
     
     private static Asset<Texture2D>[]? oldTreeTops;
+
+    /// <summary> to ensure theres enough room for vanilla + our variants while hopefully being safe for modtree </summary>
+    private const int big_style_offset = 40;    
 
     public static TreeStyleProfile GetTreeProfile(int style)
     {
         return profiles[style];
     }
     
+    public static bool TryGetAlternative(int style, out TreeStyleProfile altProfile) 
+        => altProfiles.TryGetValue(style, out altProfile);
+    
     [ModSystemHooks.ResizeArrays]
     private static void ResizeTreeTops()
     {
         oldTreeTops ??= TextureAssets.TreeTop;
-        Array.Resize(ref TextureAssets.TreeTop, profiles.Count);
+        Array.Resize(ref TextureAssets.TreeTop, big_style_offset + (int)VanillaTreeStyle.Count);
     }
 
-    [OnUnload]
+    [OnUnload]  
     private static void RestoreVanillaTreeTops()
     {
         profiles.Clear();
-
+        altProfiles.Clear();
+        
         if (oldTreeTops is not null)
         {
             TextureAssets.TreeTop = oldTreeTops;
         }
+    }
+
+    /// <summary>
+    /// Registers an alternate variant of an existing treetop style.
+    /// </summary>
+    /// <param name="style"></param>
+    /// <param name="tex"></param>
+    /// <param name="branches"></param>
+    /// <param name="variations"></param>
+    private static void RegisterAltProfile(int style, Asset<Texture2D> tex, Asset<Texture2D> branches, TreetopVariation[] variations) {
+        int paintIdx = big_style_offset + style;
+        
+        if (paintIdx >= TextureAssets.TreeTop.Length) {
+            ResizeTreeTops();
+        }
+        
+        TextureAssets.TreeTop[paintIdx] = tex;
+
+        altProfiles[style] = new TreeStyleProfile(
+            TreeTopIdx: paintIdx,
+            TopTexture: tex,
+            BranchTexture: branches,
+            Variations: variations
+        );
     }
 
     [OnLoad]
@@ -266,5 +298,15 @@ public static class TreeProfiles
                 ]
             );
         }
+        
+        RegisterAltProfile(
+            style: (int)VanillaTreeStyle.Forest1, 
+            tex: Assets.Images.Content.Trees.Tree_Tops_0.Asset, 
+            branches: TextureAssets.TreeBranch[0], 
+            variations: 
+            [
+                new TreetopVariation(216, 190, new Vector2(2, -4))
+            ]
+        );
     }
 }

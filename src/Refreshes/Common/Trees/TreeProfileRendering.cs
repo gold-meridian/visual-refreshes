@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
 using Terraria.ID;
+using Terraria.Utilities;
 
 namespace Refreshes.Common;
 
@@ -33,6 +34,10 @@ internal sealed class TreeProfileRendering
         for (var i = 0; i < treeCount; i++)
         {
             var (x, y) = self._specialPositions[tile_counter_type][i];
+            
+            //todo (?)
+            var seededRandom = new UnifiedRandom(x * 1000 + y);
+            const float big_tree_chance = 0.2f;
 
             var tile = Main.tile[x, y];
             if (!tile.HasTile)
@@ -100,7 +105,15 @@ internal sealed class TreeProfileRendering
 
                     var treeProfile = TreeProfiles.GetTreeProfile(treeStyle);
                     var gemProfile = GemTreeVanityProfiles.GetProfile(tile.TileType);
+                    
+                    bool isBig = false;
 
+                    if (TreeProfiles.TryGetAlternative(treeStyle, out var altProfile) && seededRandom.NextFloat() < big_tree_chance)
+                    {
+                        treeProfile = altProfile;
+                        isBig = true;
+                    }
+                    
                     switch (frameX)
                     {
                         // tree top
@@ -167,24 +180,6 @@ internal sealed class TreeProfileRendering
                                 variation.Width / 2f,
                                 variation.Height
                             );
-
-                            //hardcoded big tree style, todo: reimplement using profiles when ready
-                            /*if (treeStyle3 == 0 && seededRandom.NextFloat() < customRectChance) {
-                                rect = new Rectangle(0, 0, 216, 190);
-                                vector.X -= 2;
-                                vector.Y += 4;
-
-                                origin = new Vector2(216 / 2, 190);
-
-                                num15 = self.GetWindCycle(x, y, self._treeWindCounter) * 0.5f;
-
-                                //treeTopTexture = Assets.Images.Content.Trees.Tree_Tops_0.Asset.Value;
-                                treeTopTexture = profile.GetTop(tile.color());
-                            } else {
-                                rect = new Rectangle(treeFrame * (topTextureFrameWidth3 + 2), 0, topTextureFrameWidth3, topTextureFrameHeight3);
-
-                                origin = new Vector2(topTextureFrameWidth3 / 2, topTextureFrameHeight3);
-                            }*/
 
                             if (gemProfile.HasValue && GemTreeRendering.RenderCtx.HasValue)
                             {
