@@ -1,10 +1,10 @@
-﻿namespace Refreshes.Content;
+﻿namespace Refreshes.Common;
 
 public enum VanillaTreeStyle
 {
     Unknown,
 
-    //forest trees
+    // Forest trees
     Forest,
     SakuraTree,
     WillowTree,

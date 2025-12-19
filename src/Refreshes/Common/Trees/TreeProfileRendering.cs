@@ -1,13 +1,11 @@
 ﻿using System;
 using Daybreak.Common.Features.Hooks;
 using JetBrains.Annotations;
-using Refreshes.Common;
 using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
 using Terraria.ID;
-using Terraria.Utilities;
 
-namespace Refreshes.Content;
+namespace Refreshes.Common;
 
 [UsedImplicitly]
 internal sealed class TreeProfileRendering

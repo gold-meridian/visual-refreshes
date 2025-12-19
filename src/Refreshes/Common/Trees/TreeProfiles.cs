@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 using ReLogic.Content;
 using Terraria.GameContent;
 
-namespace Refreshes.Content;
+namespace Refreshes.Common;
 
 public record struct TreetopVariation(int Width, int Height, Vector2 OriginOffset = default);
 
