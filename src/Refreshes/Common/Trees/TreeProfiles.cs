@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Daybreak.Common.Features.Hooks;
 using ReLogic.Content;
 using Terraria.GameContent;
@@ -86,7 +87,7 @@ public readonly record struct TreeStyleProfile(
 
 public static class TreeProfiles
 {
-    private static readonly List<TreeStyleProfile> profiles = [];
+    private static readonly List<TreeStyleProfile> profiles = Enumerable.Repeat(default(TreeStyleProfile), (int)VanillaTreeStyle.Count).ToList();
     
     private static Asset<Texture2D>[]? oldTreeTops;
 
