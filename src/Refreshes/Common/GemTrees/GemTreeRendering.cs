@@ -5,10 +5,18 @@ using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
 using Terraria.ID;
 
-namespace Refreshes.Content;
+namespace Refreshes.Common;
 
 // TODO: Re-add paint support later?
 
+/// <summary>
+///     Contextualizes a gem tree rendering request.
+/// </summary>
+/// <param name="Renderer">
+///     The <see cref="GemTreeRenderer"/> instance responsible for rendering the
+///     tile.
+/// </param>
+/// <param name="CurrentBiome">The ID of the current biome.</param>
 public readonly record struct RendererContext(
     GemTreeRenderer Renderer,
     int CurrentBiome

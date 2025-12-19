@@ -1,7 +1,7 @@
 ﻿using ReLogic.Content;
 using Terraria.ID;
 
-namespace Refreshes.Content;
+namespace Refreshes.Common;
 
 /// <summary>
 ///     The basis for rendering a gem tree tile (gem tree, gem tree sapling).
@@ -60,7 +60,7 @@ public abstract class GemTreeRenderer
 ///     The default implementation of <see cref="GemTreeRenderer"/> for gem
 ///     trees.
 /// </summary>
-public sealed class TreeRenderer : GemTreeRenderer
+internal sealed class TreeRenderer : GemTreeRenderer
 {
     public override RendererContext GetContext(
         int tileX,
@@ -113,7 +113,7 @@ public sealed class TreeRenderer : GemTreeRenderer
 ///     The default implementation of <see cref="GemTreeRenderer"/> for gem
 ///     tree saplings.
 /// </summary>
-public sealed class SaplingRenderer : GemTreeRenderer
+internal sealed class SaplingRenderer : GemTreeRenderer
 {
     public override RendererContext GetContext(
         int tileX,

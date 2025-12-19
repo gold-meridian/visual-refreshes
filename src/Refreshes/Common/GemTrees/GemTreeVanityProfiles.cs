@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ReLogic.Content;
 using Terraria.ID;
 
-namespace Refreshes.Content;
+namespace Refreshes.Common;
 
 /// <summary>
 ///     Describes the assets used for a single gem tree.  This tree is derived
