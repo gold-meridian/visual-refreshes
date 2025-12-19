@@ -64,33 +64,61 @@ internal sealed class TreeProfileRendering
                 // branch and top rendering.
                 if (foliageDataProvider is not null && frameY >= 198 && frameX >= 22)
                 {
+                    var xOffset = frameX switch
+                    {
+                        22 => 0,
+                        44 => 1,
+                        66 => -1,
+                        _ => default(int?),
+                    };
+
+                    if (!xOffset.HasValue)
+                    {
+                        continue;
+                    }
+
                     var treeFrame = WorldGen.GetTreeFrame(tile);
+                    var treeStyle = 0;
+
+                    if (
+                        !foliageDataProvider(
+                            x,
+                            y,
+                            xOffset.Value,
+                            ref treeFrame,
+                            ref treeStyle,
+                            out var floorY,
+                            out var topTextureFrameWidth,
+                            out var topTextureFrameHeight
+                        )
+                    )
+                    {
+                        continue;
+                    }
+
+                    var treeProfile = TreeProfiles.GetTreeProfile(treeStyle);
+
                     switch (frameX)
                     {
-                        // left branch
+                        // tree top
                         case 22:
                         {
-                            var treeStyle3 = 0;
-                            var topTextureFrameWidth3 = 80;
-                            var topTextureFrameHeight3 = 80;
-                            var num13 = 0;
-                            var grassPosX = x + num13;
-                            var floorY3 = y;
-                            if (!foliageDataProvider(x, y, num13, ref treeFrame, ref treeStyle3, out floorY3, out topTextureFrameWidth3, out topTextureFrameHeight3))
-                            {
-                                continue;
-                            }
+                            var grassPosX = x + xOffset.Value;
 
-                            //self.EmitTreeLeaves(x, y, grassPosX, floorY3);
+                            // TODO: Sydney should just make this configurable?
+                            self.EmitTreeLeaves(x, y, grassPosX, floorY);
 
-                            //treestyle == 14 = giant mushroom tree
-                            if (treeStyle3 == 14)
+                            // Emit light from glowing mushroom tree tops.
+                            if (treeStyle == (int)VanillaTreeStyle.GlowingMushroom1)
                             {
-                                var num14 = self._rand.Next(28, 42) * 0.005f;
-                                num14 += (270 - Main.mouseTextColor) / 1000f;
                                 if (tile.color() == 0)
                                 {
-                                    Lighting.AddLight(x, y, 0.1f, 0.2f + num14 / 2f, 0.7f + num14);
+                                    var colorIntensity = self._rand.Next(28, 42) * 0.005f;
+                                    {
+                                        colorIntensity += (270 - Main.mouseTextColor) / 1000f;
+                                    }
+
+                                    Lighting.AddLight(x, y, 0.1f, 0.2f + colorIntensity / 2f, 0.7f + colorIntensity);
                                 }
                                 else
                                 {
@@ -102,31 +130,41 @@ internal sealed class TreeProfileRendering
                                 }
                             }
 
-                            var tileColor3 = tile.color();
-                            var treeTopTexture = self.GetTreeTopTexture(treeStyle3, 0, tileColor3);
-                            Vector2 vector = vector = new Vector2(x * 16 - (int)screenPosition.X + 8, y * 16 - (int)screenPosition.Y + 16) + zero;
-                            var num15 = 0f;
-                            if (!hasWall)
+                            var tileColor = tile.color();
+                            var topTexture = treeProfile.GetTop(tileColor);
+                            var topPos = new Vector2(x * 16 - (int)screenPosition.X + 8, y * 16 - (int)screenPosition.Y + 16);
+
+                            var windIntensity = hasWall ? 0f : self.GetWindCycle(x, y, self._treeWindCounter);
                             {
-                                num15 = self.GetWindCycle(x, y, self._treeWindCounter);
+                                topPos.X += windIntensity * 2f;
+                                topPos.Y += Math.Abs(windIntensity) * 2f;
                             }
 
-                            vector.X += num15 * 2f;
-                            vector.Y += Math.Abs(num15) * 2f;
-
-                            var color6 = Lighting.GetColor(x, y);
+                            var tileLight = Lighting.GetColor(x, y);
                             if (tile.fullbrightBlock())
                             {
-                                color6 = Color.White;
+                                tileLight = Color.White;
                             }
 
-                            TreeProfiles.TryGetProfile(treeStyle3, out var profile);
-                            var variation = profile.GetVariation(treeFrame);
+                            var variation = treeProfile.HasVariations
+                                ? treeProfile.GetVariation(treeFrame)
+                                : new TreetopVariation(
+                                    Width: topTextureFrameWidth,
+                                    Height: topTextureFrameHeight
+                                );
 
-                            Rectangle rect = new(treeFrame * (variation.Width + 2), 0, variation.Width, variation.Height);
-                            Vector2 origin = new(variation.Width / 2, variation.Height);
+                            var sourceRect = new Rectangle(
+                                treeFrame * (variation.Width + 2),
+                                0,
+                                variation.Width,
+                                variation.Height
+                            );
 
-#region reimpl
+                            var origin = new Vector2(
+                                variation.Width / 2f,
+                                variation.Height
+                            );
+
                             //hardcoded big tree style, todo: reimplement using profiles when ready
                             /*if (treeStyle3 == 0 && seededRandom.NextFloat() < customRectChance) {
                                 rect = new Rectangle(0, 0, 216, 190);
@@ -144,46 +182,44 @@ internal sealed class TreeProfileRendering
 
                                 origin = new Vector2(topTextureFrameWidth3 / 2, topTextureFrameHeight3);
                             }*/
-#endregion
 
-                            treeTopTexture = profile.GetTop(tileColor3);
-
+                            /*
                             var gemProfile = GemTreeVanityProfiles.GetProfile(tile.TileType);
                             if (gemProfile.HasValue && GemTreeRendering.RenderCtx.HasValue)
                             {
-                                treeTopTexture = gemProfile.Value.GetDescription(GemTreeRendering.RenderCtx.Value.CurrentBiome).Tops.Value;
+                                topTexture = gemProfile.Value.GetDescription(GemTreeRendering.RenderCtx.Value.CurrentBiome).Tops.Value;
                             }
+                            */
 
                             // draw treetop
                             Main.spriteBatch.Draw(
-                                treeTopTexture,
-                                vector,
-                                rect,
-                                color6,
-                                num15 * treetop_sway_factor,
+                                topTexture,
+                                topPos,
+                                sourceRect,
+                                tileLight,
+                                windIntensity * treetop_sway_factor,
                                 origin + variation.OriginOffset,
                                 1f,
                                 SpriteEffects.None,
                                 0f
                             );
 
-                            //ashtree, tbd
-                            if (type == 634)
+                            if (type == TileID.TreeAsh)
                             {
-                                var value3 = TextureAssets.GlowMask[316].Value;
-                                var white3 = Color.White;
+                                var ashTopGlow = TextureAssets.GlowMask[GlowMaskID.TreeAshTop].Value;
+
                                 Main.spriteBatch.Draw(
-                                    value3,
-                                    vector,
+                                    ashTopGlow,
+                                    topPos,
                                     new Rectangle(
-                                        treeFrame * (topTextureFrameWidth3 + 2),
+                                        treeFrame * (topTextureFrameWidth + 2),
                                         0,
-                                        topTextureFrameWidth3,
-                                        topTextureFrameHeight3
+                                        topTextureFrameWidth,
+                                        topTextureFrameHeight
                                     ),
-                                    white3,
-                                    num15 * treetop_sway_factor,
-                                    new Vector2(topTextureFrameWidth3 / 2, topTextureFrameHeight3),
+                                    Color.White,
+                                    windIntensity * treetop_sway_factor,
+                                    new Vector2(topTextureFrameWidth / 2f, topTextureFrameHeight),
                                     1f,
                                     SpriteEffects.None,
                                     0f
@@ -193,29 +229,15 @@ internal sealed class TreeProfileRendering
                             break;
                         }
 
-                        // right branch
+                        // left branch
                         case 44:
                         {
-                            var treeStyle2 = 0;
-                            var num9 = x;
-                            var floorY2 = y;
-                            var num10 = 1;
-                            if (!foliageDataProvider(
-                                    x,
-                                    y,
-                                    num10,
-                                    ref treeFrame,
-                                    ref treeStyle2,
-                                    out floorY2,
-                                    out _,
-                                    out _
-                                ))
-                            {
-                                continue;
-                            }
+                            const int x_offset = 1;
 
-                            self.EmitTreeLeaves(x, y, num9 + num10, floorY2);
-                            if (treeStyle2 == 14)
+                            var num9 = x;
+
+                            self.EmitTreeLeaves(x, y, num9 + x_offset, floorY);
+                            if (treeStyle == 14)
                             {
                                 var num11 = self._rand.Next(28, 42) * 0.005f;
                                 num11 += (270 - Main.mouseTextColor) / 1000f;
@@ -234,7 +256,7 @@ internal sealed class TreeProfileRendering
                             }
 
                             var tileColor2 = tile.color();
-                            var treeBranchTexture2 = self.GetTreeBranchTexture(treeStyle2, 0, tileColor2);
+                            var treeBranchTexture2 = self.GetTreeBranchTexture(treeStyle, 0, tileColor2);
                             var position2 = new Vector2(x * 16, y * 16) - screenPosition.Floor() + zero +
                                             new Vector2(16f, 12f);
                             var num12 = 0f;
@@ -280,28 +302,14 @@ internal sealed class TreeProfileRendering
                             break;
                         }
 
-                        // tree top
+                        // right branch
                         case 66:
                         {
-                            var treeStyle = 0;
-                            var num5 = x;
-                            var floorY = y;
-                            var num6 = -1;
-                            if (!foliageDataProvider(
-                                    x,
-                                    y,
-                                    num6,
-                                    ref treeFrame,
-                                    ref treeStyle,
-                                    out floorY,
-                                    out _,
-                                    out _
-                                ))
-                            {
-                                continue;
-                            }
+                            const int x_offset = -1;
 
-                            self.EmitTreeLeaves(x, y, num5 + num6, floorY);
+                            var num5 = x;
+
+                            self.EmitTreeLeaves(x, y, num5 + x_offset, floorY);
                             if (treeStyle == 14)
                             {
                                 var num7 = self._rand.Next(28, 42) * 0.005f;
@@ -395,7 +403,7 @@ internal sealed class TreeProfileRendering
                         132 => 2,
                         _ => 0,
                     };
-                    
+
                     if (palmBiome is >= 4 and <= 7)
                     {
                         palmTopIdx = 21;
@@ -437,12 +445,11 @@ internal sealed class TreeProfileRendering
                         y * 16 - (int)screenPosition.Y + 16 + palmTopVerticalOffset
                     );
 
-                    var windIntensity = hasWall
-                        ? 0f
-                        : self.GetWindCycle(x, y, self._treeWindCounter);
-
-                    palmTopPos.X += windIntensity * 2f;
-                    palmTopPos.Y += Math.Abs(windIntensity) * 2f;
+                    var windIntensity = hasWall ? 0f : self.GetWindCycle(x, y, self._treeWindCounter);
+                    {
+                        palmTopPos.X += windIntensity * 2f;
+                        palmTopPos.Y += Math.Abs(windIntensity) * 2f;
+                    }
 
                     var palmTopLight = Lighting.GetColor(x, y);
                     if (tile.fullbrightBlock())

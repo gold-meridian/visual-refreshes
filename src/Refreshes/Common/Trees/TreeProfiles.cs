@@ -7,24 +7,59 @@ using Terraria.GameContent;
 
 namespace Refreshes.Common;
 
+/// <summary>
+///     A framing variation for tree top rendering.
+/// </summary>
+/// <param name="Width">The width of this frame.</param>
+/// <param name="Height">The height of this frame.</param>
+/// <param name="OriginOffset">
+///     The origin offset to apply to the position.
+/// </param>
 public record struct TreetopVariation(
     int Width,
     int Height,
     Vector2 OriginOffset = default
 );
 
+/// <summary>
+///     A basic profile describing how to render a tree.
+/// </summary>
+/// <param name="TreeTopIdx">
+///     The style index, as used in
+///     <see cref="TilePaintSystemV2.TryGetTreeTopAndRequestIfNotReady"/>.
+/// </param>
+/// <param name="TopTexture">The texture to use for the tree top.</param>
+/// <param name="BranchTexture">
+///     The texture to use for the tree branches.
+/// </param>
+/// <param name="Variations">Any framing variations.</param>
 public readonly record struct TreeStyleProfile(
-    int PaintIdx,
+    int TreeTopIdx,
     Asset<Texture2D> TopTexture,
     Asset<Texture2D> BranchTexture,
     TreetopVariation[] Variations
 )
 {
+    /// <summary>
+    ///     Whether any variations are explicitly stated.
+    ///     <br />
+    ///     This will be <see langword="false"/> if <see cref="Variations"/> has
+    ///     no items, which is the default case for an empty profile.
+    /// </summary>
+    public bool HasVariations => Variations.Length > 0;
+    
+    /// <summary>
+    ///     Gets the variation for the frame.
+    /// </summary>
     public TreetopVariation GetVariation(int frame)
     {
         return Variations[frame % Variations.Length];
     }
 
+    /// <summary>
+    ///     Gets the tree top texture, requesting the painted variant if
+    ///     specified.
+    /// </summary>
     public Texture2D GetTop(int paintColor)
     {
         if (paintColor == 0)
@@ -32,14 +67,26 @@ public readonly record struct TreeStyleProfile(
             return TopTexture.Value;
         }
 
-        return Main.instance.TilePaintSystem.TryGetTreeTopAndRequestIfNotReady(PaintIdx, 0, paintColor) ?? TopTexture.Value;
+        return Main.instance.TilePaintSystem.TryGetTreeTopAndRequestIfNotReady(TreeTopIdx, 0, paintColor) ?? TopTexture.Value;
+    }
+    
+    /// <summary>
+    ///     Gets the tree branch texture, requesting the painted variant if
+    ///     specified.
+    /// </summary>
+    public Texture2D GetBranch(int paintColor)
+    {
+        if (paintColor == 0)
+        {
+            return BranchTexture.Value;
+        }
+
+        return Main.instance.TilePaintSystem.TryGetTreeBranchAndRequestIfNotReady(TreeTopIdx, 0, paintColor) ?? BranchTexture.Value;
     }
 }
 
 public static class TreeProfiles
 {
-    private const int treetop_resize_buffer = 128;
-
     private static readonly List<TreeStyleProfile> profiles = [];
     
     private static Asset<Texture2D>[]? oldTreeTops;
@@ -53,7 +100,7 @@ public static class TreeProfiles
     private static void ResizeTreeTops()
     {
         oldTreeTops ??= TextureAssets.TreeTop;
-        Array.Resize(ref TextureAssets.TreeTop, treetop_resize_buffer);
+        Array.Resize(ref TextureAssets.TreeTop, profiles.Count);
     }
 
     [OnUnload]
@@ -76,7 +123,7 @@ public static class TreeProfiles
         for (var i = 0; i < (int)VanillaTreeStyle.Count; i++)
         {
             profiles[i] = new TreeStyleProfile(
-                PaintIdx: i,
+                TreeTopIdx: i,
                 TopTexture: TextureAssets.TreeTop[i],
                 BranchTexture: TextureAssets.TreeBranch[i],
                 Variations: []
@@ -88,7 +135,7 @@ public static class TreeProfiles
             var style = (int)forest;
 
             profiles[style] = new TreeStyleProfile(
-                PaintIdx: style,
+                TreeTopIdx: style,
                 TopTexture: TextureAssets.TreeTop[style],
                 BranchTexture: TextureAssets.TreeBranch[style],
                 Variations:
@@ -105,7 +152,7 @@ public static class TreeProfiles
             var style = (int)vanity;
 
             profiles[style] = new TreeStyleProfile(
-                PaintIdx: style,
+                TreeTopIdx: style,
                 TopTexture: TextureAssets.TreeTop[style],
                 BranchTexture: TextureAssets.TreeBranch[style],
                 Variations:
@@ -122,7 +169,7 @@ public static class TreeProfiles
             var style = (int)boreal;
 
             profiles[style] = new TreeStyleProfile(
-                PaintIdx: style,
+                TreeTopIdx: style,
                 TopTexture: TextureAssets.TreeTop[style],
                 BranchTexture: TextureAssets.TreeBranch[style],
                 Variations:
@@ -139,7 +186,7 @@ public static class TreeProfiles
             var style = (int)jungle;
 
             profiles[style] = new TreeStyleProfile(
-                PaintIdx: style,
+                TreeTopIdx: style,
                 TopTexture: TextureAssets.TreeTop[style],
                 BranchTexture: TextureAssets.TreeBranch[style],
                 Variations:
@@ -156,7 +203,7 @@ public static class TreeProfiles
             var style = (int)jungle;
 
             profiles[style] = new TreeStyleProfile(
-                PaintIdx: style,
+                TreeTopIdx: style,
                 TopTexture: TextureAssets.TreeTop[style],
                 BranchTexture: TextureAssets.TreeBranch[style],
                 Variations:
@@ -173,7 +220,7 @@ public static class TreeProfiles
             var style = (int)corruption;
 
             profiles[style] = new TreeStyleProfile(
-                PaintIdx: style,
+                TreeTopIdx: style,
                 TopTexture: TextureAssets.TreeTop[style],
                 BranchTexture: TextureAssets.TreeBranch[style],
                 Variations:
@@ -190,7 +237,7 @@ public static class TreeProfiles
             var style = (int)crimson;
 
             profiles[style] = new TreeStyleProfile(
-                PaintIdx: style,
+                TreeTopIdx: style,
                 TopTexture: TextureAssets.TreeTop[style],
                 BranchTexture: TextureAssets.TreeBranch[style],
                 Variations:
@@ -207,7 +254,7 @@ public static class TreeProfiles
             var style = (int)glowingMushroom;
 
             profiles[style] = new TreeStyleProfile(
-                PaintIdx: style,
+                TreeTopIdx: style,
                 TopTexture: TextureAssets.TreeTop[style],
                 BranchTexture: TextureAssets.TreeBranch[style],
                 Variations:
