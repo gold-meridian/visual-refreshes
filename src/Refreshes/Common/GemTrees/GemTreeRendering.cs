@@ -23,7 +23,9 @@ public readonly record struct RendererContext(
 );
 
 /// <summary>
-///     Handles special rendering of gem tree variants.
+///     Handles reworked gem tree rendering.  Features include gem glowmasks
+///     which get disproportionately affected by light as well as unique stone
+///     trunk textures for non-purity stone.
 /// </summary>
 public static class GemTreeRendering
 {
@@ -58,6 +60,32 @@ public static class GemTreeRendering
         }
     }
 
+    // TODO: Make real configs for these?
+
+    /// <summary>
+    ///     Whether the broad implementation is enabled, allowing for glowing
+    ///     gems and per-biome textures.
+    /// </summary>
+    public static bool Enabled => true /* someCondition */;
+
+    /// <summary>
+    ///     Whether gems should be rendered as glowmasks with disproportionate
+    ///     lighting.
+    /// </summary>
+    public static bool GlowingGemsEnabled => Enabled /* && someCondition */;
+
+    /// <summary>
+    ///     Whether gem trunks should be rendered with unique textures depending
+    ///     on the stone they grow on.
+    /// </summary>
+    public static bool BiomeVariantsEnabled => Enabled /* && someCondition */;
+
+    /// <summary>
+    ///     Whether biome variant-gem trees should drop stone variants
+    ///     respective to their biome.
+    /// </summary>
+    public static bool BiomeVariantDropsEnabled => BiomeVariantsEnabled /* && synced && someCondition */;
+
     private static RendererContext? renderCtx;
 
     [OnLoad]
@@ -72,33 +100,6 @@ public static class GemTreeRendering
         On_TileDrawing.DrawTrees += DrawTrees;
 
         On_WorldGen.KillTile_GetItemDrops += ChangeStoneTypeForGemTrees;
-    }
-
-    private static void ChangeStoneTypeForGemTrees(On_WorldGen.orig_KillTile_GetItemDrops orig, int x, int y, Tile tileCache, out int dropItem, out int dropItemStack, out int secondaryItem, out int secondaryItemStack, bool includeLargeObjectDrops)
-    {
-        orig(x, y, tileCache, out dropItem, out dropItemStack, out secondaryItem, out secondaryItemStack, includeLargeObjectDrops);
-
-        if (Sets.GemTreeRenderers[tileCache.TileType] is not { } renderer)
-        {
-            return;
-        }
-
-        var ctx = renderer.GetContext(x, y);
-        if (ctx.CurrentBiome == -1 || ctx.CurrentBiome == BiomeConversionID.Purity)
-        {
-            return;
-        }
-
-        if (dropItem == ItemID.StoneBlock)
-        {
-            dropItem = ctx.CurrentBiome switch
-            {
-                BiomeConversionID.Corruption => ItemID.EbonstoneBlock,
-                BiomeConversionID.Crimson => ItemID.CrimstoneBlock,
-                BiomeConversionID.Hallow => ItemID.PearlstoneBlock,
-                _ => dropItem,
-            };
-        }
     }
 
     private static void DrawSingleTile(On_TileDrawing.orig_DrawSingleTile orig, TileDrawing self, TileDrawInfo drawData, bool solidLayer, int waterStyleOverride, Vector2 screenPosition, Vector2 screenOffset, int tileX, int tileY)
@@ -120,7 +121,13 @@ public static class GemTreeRendering
         }
     }
 
-    private static Texture2D GetTileDrawTexture_Tile_int_int(On_TileDrawing.orig_GetTileDrawTexture_Tile_int_int orig, TileDrawing self, Tile tile, int tileX, int tileY)
+    private static Texture2D GetTileDrawTexture_Tile_int_int(
+        On_TileDrawing.orig_GetTileDrawTexture_Tile_int_int orig,
+        TileDrawing self,
+        Tile tile,
+        int tileX,
+        int tileY
+    )
     {
         // Special case for tiles drawn in DrawGrass.
         if (!renderCtx.HasValue)
@@ -144,7 +151,14 @@ public static class GemTreeRendering
         return renderCtx.Value.Renderer.GetTileDrawTexture(renderCtx.Value, profile.Value).Value;
     }
 
-    private static Texture2D GetTileDrawTexture_Tile_int_int_int(On_TileDrawing.orig_GetTileDrawTexture_Tile_int_int_int orig, TileDrawing self, Tile tile, int tileX, int tileY, int paintOverride)
+    private static Texture2D GetTileDrawTexture_Tile_int_int_int(
+        On_TileDrawing.orig_GetTileDrawTexture_Tile_int_int_int orig,
+        TileDrawing self,
+        Tile tile,
+        int tileX,
+        int tileY,
+        int paintOverride
+    )
     {
         if (!renderCtx.HasValue)
         {
@@ -160,7 +174,18 @@ public static class GemTreeRendering
         return renderCtx.Value.Renderer.GetTileDrawTexture(renderCtx.Value, profile.Value).Value;
     }
 
-    private static void DrawAnimatedTile_AdjustForVisionChangers(On_TileDrawing.orig_DrawAnimatedTile_AdjustForVisionChangers orig, TileDrawing self, int i, int j, Tile tileCache, ushort typeCache, short tileFrameX, short tileFrameY, ref Color tileLight, bool canDoDust)
+    private static void DrawAnimatedTile_AdjustForVisionChangers(
+        On_TileDrawing.orig_DrawAnimatedTile_AdjustForVisionChangers orig,
+        TileDrawing self,
+        int i,
+        int j,
+        Tile tileCache,
+        ushort typeCache,
+        short tileFrameX,
+        short tileFrameY,
+        ref Color tileLight,
+        bool canDoDust
+    )
     {
         orig(self, i, j, tileCache, typeCache, tileFrameX, tileFrameY, ref tileLight, canDoDust);
 
@@ -168,7 +193,26 @@ public static class GemTreeRendering
         renderCtx = null;
     }
 
-    private static void GetTileDrawData(On_TileDrawing.orig_GetTileDrawData orig, TileDrawing self, int x, int y, Tile tileCache, ushort typeCache, ref short tileFrameX, ref short tileFrameY, out int tileWidth, out int tileHeight, out int tileTop, out int halfBrickHeight, out int addFrX, out int addFrY, out SpriteEffects tileSpriteEffect, out Texture2D glowTexture, out Rectangle glowSourceRect, out Color glowColor)
+    private static void GetTileDrawData(
+        On_TileDrawing.orig_GetTileDrawData orig,
+        TileDrawing self,
+        int x,
+        int y,
+        Tile tileCache,
+        ushort typeCache,
+        ref short tileFrameX,
+        ref short tileFrameY,
+        out int tileWidth,
+        out int tileHeight,
+        out int tileTop,
+        out int halfBrickHeight,
+        out int addFrX,
+        out int addFrY,
+        out SpriteEffects tileSpriteEffect,
+        out Texture2D glowTexture,
+        out Rectangle glowSourceRect,
+        out Color glowColor
+    )
     {
         orig(self, x, y, tileCache, typeCache, ref tileFrameX, ref tileFrameY, out tileWidth, out tileHeight, out tileTop, out halfBrickHeight, out addFrX, out addFrY, out tileSpriteEffect, out glowTexture, out glowSourceRect, out glowColor);
 
@@ -198,7 +242,10 @@ public static class GemTreeRendering
         };
     }
 
-    private static void DrawTrees(On_TileDrawing.orig_DrawTrees orig, TileDrawing self)
+    private static void DrawTrees(
+        On_TileDrawing.orig_DrawTrees orig,
+        TileDrawing self
+    )
     {
         var unscaledPosition = Main.Camera.UnscaledPosition;
         var zero = Vector2.Zero;
@@ -581,6 +628,43 @@ public static class GemTreeRendering
             {
                 renderCtx = null;
             }
+        }
+    }
+
+    private static void ChangeStoneTypeForGemTrees(
+        On_WorldGen.orig_KillTile_GetItemDrops orig,
+        int x,
+        int y,
+        Tile tileCache,
+        out int dropItem,
+        out int dropItemStack,
+        out int secondaryItem,
+        out int secondaryItemStack,
+        bool includeLargeObjectDrops
+    )
+    {
+        orig(x, y, tileCache, out dropItem, out dropItemStack, out secondaryItem, out secondaryItemStack, includeLargeObjectDrops);
+
+        if (Sets.GemTreeRenderers[tileCache.TileType] is not { } renderer)
+        {
+            return;
+        }
+
+        var ctx = renderer.GetContext(x, y);
+        if (ctx.CurrentBiome == -1 || ctx.CurrentBiome == BiomeConversionID.Purity)
+        {
+            return;
+        }
+
+        if (dropItem == ItemID.StoneBlock)
+        {
+            dropItem = ctx.CurrentBiome switch
+            {
+                BiomeConversionID.Corruption => ItemID.EbonstoneBlock,
+                BiomeConversionID.Crimson => ItemID.CrimstoneBlock,
+                BiomeConversionID.Hallow => ItemID.PearlstoneBlock,
+                _ => dropItem,
+            };
         }
     }
 
