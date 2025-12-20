@@ -1,4 +1,5 @@
 ﻿using Daybreak.Common.Features.Hooks;
+using Daybreak.Common.Rendering;
 using MonoMod.RuntimeDetour;
 using Refreshes.Common.Particles;
 using Terraria.Audio;
@@ -35,7 +36,8 @@ internal sealed class CloudInABottleModifications {
                     p.Rotation = Main.rand.NextFloat(MathHelper.TwoPi);
                     p.RotationSpeed = Main.rand.NextFloat(-0.1f, 0.1f);
                 
-                    ParticleEngine.Particles.Add(p);
+
+                    CloudParticleRenderer.Particles.Add(p);
                 }
             }
         );
@@ -77,5 +79,68 @@ public sealed class CloudJumpParticle : BaseParticle<CloudJumpParticle> {
         var color = Color.White * Alpha;
 
         spriteBatch.Draw(tex, Position + settings.AnchorPosition, null, color, Rotation, origin, Scale, SpriteEffects.None, 0f);
+    }
+}
+
+public sealed class CloudParticleRenderer : ModSystem
+{
+    private static RenderTargetLease? cloudLease;
+
+    public static readonly ParticleRenderer Particles = new();
+
+    public override void Load() {
+        Main.RunOnMainThread(() => {
+            cloudLease = ScreenspaceTargetPool.Shared.Rent(Main.instance.GraphicsDevice);
+        });
+
+        On_Main.DrawDust += DrawCloudParticles;
+    }
+
+    public override void Unload() {
+        cloudLease?.Dispose();
+        cloudLease = null;
+    }
+
+    public override void PostUpdateEverything()
+    {
+        if (!Main.dedServ)
+            Particles.Update();
+    }
+
+    private void DrawCloudParticles(On_Main.orig_DrawDust orig, Main self) {
+        if (cloudLease is null) {
+            orig(self);
+            return;
+        }
+
+        var sb = Main.spriteBatch;
+        
+        sb.Begin();
+        sb.End(out var ss);
+        
+        using (cloudLease.Scope(clearColor: Color.Transparent)) {
+            Main.spriteBatch.Begin(ss with { RasterizerState = RasterizerState.CullNone });
+
+            Particles.Settings.AnchorPosition = -Main.screenPosition;
+            Particles.Draw(Main.spriteBatch);
+
+            Main.spriteBatch.End();
+        }
+
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred, 
+            BlendState.AlphaBlend, 
+            Main.DefaultSamplerState, 
+            DepthStencilState.None, 
+            Main.Rasterizer, 
+            null, 
+            Main.Transform
+        );
+
+        Main.spriteBatch.Draw(cloudLease.Target, Vector2.Zero, Color.White);
+
+        Main.spriteBatch.End();
+
+        orig(self);
     }
 }
