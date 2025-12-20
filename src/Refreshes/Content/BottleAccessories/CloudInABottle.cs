@@ -56,25 +56,29 @@ public sealed class CloudJumpParticle : BaseParticle<CloudJumpParticle> {
     public float Rotation;
     public float Alpha;
     public float RotationSpeed;
+    
+    private float alphaDecay;
 
     public override void FetchFromPool() {
         base.FetchFromPool();
         Alpha = 1f;
+        
+        alphaDecay = Main.rand.NextFloat(0.02f, 0.05f);
     }
 
     public override void Update(ref ParticleRendererSettings settings) {
         Position += Velocity;
         Velocity *= 0.94f;
         Rotation += RotationSpeed;
-        Scale *= 0.97f;
-        Alpha -= 0.03f;
+        Scale *= .97f;
+        Alpha -= alphaDecay;
 
         if (Alpha <= 0 || Scale <= 0.1f)
             ShouldBeRemovedFromRenderer = true;
     }
 
     public override void Draw(ref ParticleRendererSettings settings, SpriteBatch spriteBatch) {
-        var tex = Assets.Images.UI.AuthorTags.Tobias.Asset.Value; 
+        var tex = Assets.Images.Particles.Circle.Asset.Value; 
         var origin = tex.Size() / 2;
         var color = Color.White * Alpha;
 
@@ -86,22 +90,28 @@ public sealed class CloudParticleRenderer : ModSystem
 {
     private static RenderTargetLease? cloudLease;
 
-    public static readonly ParticleRenderer Particles = new();
+    public static ParticleRenderer Particles = new();
 
-    public override void Load() {
+    [OnLoad]
+    private void Init() {
         Main.RunOnMainThread(() => {
-            cloudLease = ScreenspaceTargetPool.Shared.Rent(Main.instance.GraphicsDevice);
+            cloudLease = ScreenspaceTargetPool.Shared.Rent(
+                Main.instance.GraphicsDevice, 
+                (w, h, _, _) => (w / 2, h / 2) 
+            );
         });
 
         On_Main.DrawDust += DrawCloudParticles;
     }
 
-    public override void Unload() {
+    [OnUnload]
+    private void Deinit() {
         cloudLease?.Dispose();
         cloudLease = null;
     }
 
-    public override void PostUpdateEverything()
+    [ModSystemHooks.PostUpdateEverything]
+    private void UpdateParticles()
     {
         if (!Main.dedServ)
             Particles.Update();
@@ -118,8 +128,9 @@ public sealed class CloudParticleRenderer : ModSystem
         sb.Begin();
         sb.End(out var ss);
         
-        using (cloudLease.Scope(clearColor: Color.Transparent)) {
-            Main.spriteBatch.Begin(ss with { RasterizerState = RasterizerState.CullNone });
+        using (cloudLease.Scope(clearColor: Color.Transparent)) 
+        {
+            Main.spriteBatch.Begin(ss with { SamplerState = SamplerState.PointClamp, TransformMatrix = Matrix.CreateScale(0.5f)});
 
             Particles.Settings.AnchorPosition = -Main.screenPosition;
             Particles.Draw(Main.spriteBatch);
@@ -127,19 +138,17 @@ public sealed class CloudParticleRenderer : ModSystem
             Main.spriteBatch.End();
         }
 
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred, 
-            BlendState.AlphaBlend, 
-            Main.DefaultSamplerState, 
-            DepthStencilState.None, 
-            Main.Rasterizer, 
-            null, 
-            Main.Transform
-        );
-
-        Main.spriteBatch.Draw(cloudLease.Target, Vector2.Zero, Color.White);
-
-        Main.spriteBatch.End();
+        using (sb.Scope())
+        {
+            sb.Begin(ss with { SamplerState = SamplerState.PointClamp,  TransformMatrix = Main.Transform, RasterizerState = Main.Rasterizer});
+            
+            Main.spriteBatch.Draw(new DrawParameters(cloudLease.Target)
+            {
+                Position = Vector2.Zero,
+                Scale = new(1f / 0.5f),
+                Color = Color.White
+            });
+        }
 
         orig(self);
     }
