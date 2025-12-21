@@ -18,6 +18,79 @@ internal sealed class TreeProfileRendering
     private static void InjectHooks()
     {
         On_TileDrawing.DrawTrees += DrawTrees_RewriteTreeRenderingForProfiles;
+        On_TileDrawing.EmitTreeLeaves += EmitTreeLeaves_Rewrite;
+    }
+    
+    private static void EmitTreeLeaves_Rewrite(On_TileDrawing.orig_EmitTreeLeaves orig, TileDrawing self, int tilePosX, int tilePosY, int grassPosX, int grassPosY)
+    {
+        if (!self._isActiveAndNotPaused) return;
+
+        var topTile = Main.tile[tilePosX, tilePosY];
+        if (topTile.LiquidAmount > 0) return;
+
+        var isBranch = tilePosX != grassPosX;
+        var treeFrame = 0;
+        var treeStyle = 0;
+
+        WorldGen.GetCommonTreeFoliageData(tilePosX, tilePosY, isBranch ? (tilePosX - grassPosX) : 0, ref treeFrame, ref treeStyle, out var floorY, out _, out _);
+
+        var treeProfile = TreeProfiles.GetTreeProfile(treeStyle);
+    
+        var seededRandom = new UnifiedRandom(tilePosX * 1000 + tilePosY);
+        if (TreeProfiles.TryGetAlternative(treeStyle, out var altProfile) && seededRandom.NextFloat() < 0.2f) {
+            treeProfile = altProfile;
+        }
+
+        int treeHeight = grassPosY - tilePosY;
+        WorldGen.GetTreeLeaf(tilePosX, topTile, Main.tile[grassPosX, grassPosY], ref treeHeight, out _, out var passStyle);
+
+        if (isLeafStyleIgnored(passStyle)) return;
+
+        bool isSpecialTree = passStyle is >= 917 and <= 925 or >= 1113 and <= 1121;
+        float spawnChance = self._leafFrequency;
+    
+        if (isSpecialTree) spawnChance /= 2;
+        if (!WorldGen.DoesWindBlowAtThisHeight(tilePosY)) spawnChance = 10000;
+        if (isBranch) spawnChance *= 3;
+
+        if (self._rand.Next((int)Math.Max(1, spawnChance)) != 0) return;
+
+        Vector2 spawnPos = new Vector2(tilePosX * 16 + 8, tilePosY * 16 + 8);
+
+        if (isBranch)
+        {
+            spawnPos.X += (tilePosX - grassPosX) * 12;
+            int branchSegment = topTile.frameY switch { 220 => 1, 242 => 2, _ => 0 };
+
+            if (topTile.frameX == 66) {
+                spawnPos += branchSegment switch { 0 or 1 => new Vector2(0, -6f), 2 => new Vector2(0, 8f), var i => Vector2.Zero };
+            } else {
+                spawnPos += branchSegment switch { 0 => new Vector2(0, 4f), 1 => new Vector2(2f, -6f), 2 => new Vector2(6f, -6f), _ => Vector2.Zero };
+            }
+        }
+        else
+        {
+            spawnPos += new Vector2(-16f, -16f);
+            if (isSpecialTree) spawnPos.Y -= Main.rand.Next(0, 28) * 4;
+        }
+
+        spawnPos += treeProfile.LeafOffset;
+
+        if (WorldGen.SolidTile(spawnPos.ToTileCoordinates())) return;
+
+        var leaf = Gore.NewGoreDirect(spawnPos, Utils.RandomVector2(Main.rand, -2f, 2f), passStyle, Main.rand.NextFloat(0.7f, 1.3f));
+        leaf.Frame.CurrentColumn = topTile.color();
+
+        return;
+        
+        static bool isLeafStyleIgnored(int style) 
+        {
+            return style switch 
+            {
+                -1 or 912 or 913 or 1278 => true,
+                _ => false
+            };
+        }
     }
 
     private static void DrawTrees_RewriteTreeRenderingForProfiles(On_TileDrawing.orig_DrawTrees orig, TileDrawing self)

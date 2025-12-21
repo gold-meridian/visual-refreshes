@@ -38,7 +38,8 @@ public readonly record struct TreeStyleProfile(
     Asset<Texture2D> TopTexture,
     Asset<Texture2D> BranchTexture,
     TreetopVariation[] Variations,
-    float WindScale = 1f
+    float WindScale = 1f,
+    Vector2 LeafOffset = default
 )
 {
     /// <summary>
@@ -130,7 +131,7 @@ public static class TreeProfiles
     /// <param name="tex"></param>
     /// <param name="branches"></param>
     /// <param name="variations"></param>
-    private static void RegisterAltProfile(int style, Asset<Texture2D> tex, Asset<Texture2D> branches, TreetopVariation[] variations) {
+    private static void RegisterAltProfile(int style, Asset<Texture2D> tex, Asset<Texture2D> branches, TreetopVariation[] variations, Vector2 leafOffset = default) {
         int paintIdx = big_style_offset + style;
         
         if (paintIdx >= TextureAssets.TreeTop.Length) {
@@ -143,7 +144,8 @@ public static class TreeProfiles
             TreeTopIdx: paintIdx,
             TopTexture: tex,
             BranchTexture: branches,
-            Variations: variations
+            Variations: variations,
+            LeafOffset: leafOffset
         );
     }
 
@@ -305,8 +307,9 @@ public static class TreeProfiles
             branches: TextureAssets.TreeBranch[0], 
             variations: 
             [
-                new TreetopVariation(216, 190, new Vector2(2, -4))
-            ]
+                new TreetopVariation(216, 190, new Vector2(2, -4)),
+            ],
+            leafOffset: new(40, -70)
         );
     }
 }
