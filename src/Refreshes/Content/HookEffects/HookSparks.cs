@@ -30,9 +30,10 @@ internal sealed class HookEffects {
         c.EmitLdarg0();
         c.EmitDelegate((Projectile self) =>
         {
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 2; i++) {
                 Vector2 velocity = self.velocity.SafeNormalize(Vector2.Zero).RotatedByRandom(MathHelper.PiOver4) * Main.rand.NextFloat(3, 7f) * -1f;
-                var particle = PixelSparkParticle.RequestNew(self.Center, velocity, Vector2.UnitY * 1, Color.Yellow, Color.Red, 0.2f);
+                var particle = PixelSparkParticle.RequestNew(self.Center, velocity, Vector2.UnitY * 1, Color.Yellow, Color.Red, 0.01f);
+                particle.Scale *= 0.05f;
                 PixelSparkRenderer.Particles.Add(particle);
             }
         });
