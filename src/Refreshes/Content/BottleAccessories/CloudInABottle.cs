@@ -151,8 +151,10 @@ public sealed class CloudParticleRenderer : ModSystem
 
     [OnUnload]
     private void Deinit() {
-        cloudLease?.Dispose();
-        cloudLease = null;
+        Main.RunOnMainThread(() => {
+            cloudLease?.Dispose();
+            cloudLease = null;
+        });
     }
 
     [ModSystemHooks.PostUpdateEverything]
