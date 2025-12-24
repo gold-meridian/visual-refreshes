@@ -28,6 +28,7 @@ VertexShaderOutput VertexShaderFunction(in VertexShaderInput input)
 float4 PixelShaderFunction(in VertexShaderOutput input) : COLOR0
 {
     float2 uv = input.Coord;
+    uv.y = (input.Coord.y - 0.5) / input.Coord.z + 0.5;
 
     return tex2D(uImage0, uv);
 }
