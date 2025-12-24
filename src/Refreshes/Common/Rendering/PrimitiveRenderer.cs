@@ -56,10 +56,13 @@ internal static class PrimitiveRenderer
 
         for (var i = 0; i < positions.Length; i++)
         {
+            // Removed removing "invalid" positions to avoid graphical issues related to color/width functions
+            /*
             if (positions[i] == Vector2.Zero)
             {
                 continue;
             }
+            */
 
             filteredPositions.Add(positions[i]);
             filteredRotations.Add(rotations[i]);
