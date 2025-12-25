@@ -1,3 +1,4 @@
+using Daybreak.Common.Features.Hooks;
 using JetBrains.Annotations;
 using Terraria.DataStructures;
 
@@ -8,13 +9,13 @@ namespace Refreshes.Common;
 /// </summary>
 [Autoload(Side = ModSide.Client)]
 [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
-internal sealed class ItemVariantRenderer : GlobalItem, IModifyItemDrawBasics
+internal sealed class ItemVariantRenderer : GlobalItem, ModifyItemDrawBasics.IGlobal
 {
     private int npcId;
     private int variantId;
     public override bool InstancePerEntity => true;
 
-    void IModifyItemDrawBasics.ModifyItemDrawBasics(
+    void ModifyItemDrawBasics.IGlobal.ModifyItemDrawBasics(
         Item item,
         int slot,
         ref Texture2D texture,
@@ -59,8 +60,8 @@ internal sealed class ItemVariantRenderer : GlobalItem, IModifyItemDrawBasics
         // We can also just check for EntitySource_Parent if it's a concern.
         if (source is EntitySource_Loot lootSource)
         {
-            // TODO: If we want to support not always using the NPC variant, we need
-            //       to make GetVariant provide both of these values.
+            // TODO: If we want to support not always using the NPC variant, we
+            //       need to make GetVariant provide both of these values.
             npcId = lootSource.Entity is NPC npc ? npc.type : 0;
             variantId = ItemVariantLoader.GetVariant(item.type, npcId);
         }
