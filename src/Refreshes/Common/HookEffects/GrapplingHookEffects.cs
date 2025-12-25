@@ -92,6 +92,7 @@ public static class GrapplingHookEffects
         );
 
         // Immediately gets popped since PlaySound normally returns a value.
+        c.Remove();
         c.EmitLdnull();
     }
 }
