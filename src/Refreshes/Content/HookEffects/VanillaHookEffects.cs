@@ -175,8 +175,8 @@ internal static class VanillaHookEffects
             for (var i = 0; i < 2; i++)
             {
                 var velocity = projectile.velocity.SafeNormalize(Vector2.Zero).RotatedByRandom(MathHelper.PiOver4) * Main.rand.NextFloat(3, 7f) * -1f;
-                var particle = PixelSparkParticle.RequestNew(projectile.Center, velocity, Vector2.UnitY * 1, Color.Yellow, Color.Red, 0.01f);
-                particle.Scale *= 0.05f;
+                var particle = PixelSparkParticle.RequestNew(projectile.Center, velocity, Vector2.UnitY * 1, Color.Yellow, Color.Red * 0.33f, 0.01f);
+                particle.Scale *= 0.033f;
                 particles.Add(particle);
             }
         }
@@ -198,8 +198,8 @@ internal static class VanillaHookEffects
             {
                 var (color, glowColor) = GetSparkParticleColor();
                 var velocity = projectile.velocity.SafeNormalize(Vector2.Zero).RotatedByRandom(MathHelper.PiOver4) * Main.rand.NextFloat(3, 7f) * -1f;
-                var particle = PixelSparkParticle.RequestNew(projectile.Center, velocity, Vector2.UnitY * 1, color, glowColor, 0.01f);
-                particle.Scale *= 0.05f;
+                var particle = PixelSparkParticle.RequestNew(projectile.Center, velocity, Vector2.UnitY * 1, color, glowColor * 0.4f, 0.01f);
+                particle.Scale *= 0.033f;
                 particles.Add(particle);
             }
         }
@@ -290,9 +290,21 @@ internal static class VanillaHookEffects
             for (var i = 0; i < 2; i++)
             {
                 var velocity = projectile.velocity.SafeNormalize(Vector2.Zero).RotatedByRandom(MathHelper.PiOver4) * Main.rand.NextFloat(3, 7f) * -1f;
-                var particle = PixelSparkParticle.RequestNew(projectile.Center, velocity, Vector2.UnitY * 1, Color.Yellow, Color.Red, 0.01f);
-                particle.Scale *= 0.05f;
+                var particle = PixelSparkParticle.RequestNew(projectile.Center, velocity, Vector2.UnitY * 1, Color.Yellow, Color.Red * 0.33f, 0.01f);
+                particle.Scale *= 0.033f;
                 particles.Add(particle);
+            }
+
+            if (Main.rand.NextBool())
+            {
+                for (var i = 0; i < Main.rand.Next(1) + 1; i++)
+                {
+                    var (color, glowColor) = GetSpecialColor();
+                    var velocity = projectile.velocity.SafeNormalize(Vector2.Zero).RotatedByRandom(MathHelper.PiOver4) * Main.rand.NextFloat(3, 7f) * -1f;
+                    var particle = PixelSparkParticle.RequestNew(projectile.Center, velocity, Vector2.UnitY * 1, color, glowColor * 0.6f, 0.01f);
+                    particle.Scale *= 0.05f;
+                    particles.Add(particle);
+                }
             }
         }
 
@@ -303,7 +315,7 @@ internal static class VanillaHookEffects
     {
         protected override (Color Color, Color GlowColor) GetSpecialColor()
         {
-            return (Color.White, Color.White);
+            return (new Color(13, 107, 216), new Color(25, 33, 191));
         }
     }
 
@@ -311,7 +323,7 @@ internal static class VanillaHookEffects
     {
         protected override (Color Color, Color GlowColor) GetSpecialColor()
         {
-            return (Color.White, Color.White);
+            return (new Color(195, 41, 44), new Color(155, 21, 18));
         }
     }
 
