@@ -11,12 +11,12 @@ public static class ParticleEngine
     /// <summary>
     ///     Renders behind dust.
     /// </summary>
-    public static readonly ParticleRenderer Particles = new();
+    public static readonly ParticleRenderer PARTICLES = new();
 
     /// <summary>
     ///     Renders behind front gore.
     /// </summary>
-    public static readonly ParticleRenderer GoreLayer = new();
+    public static readonly ParticleRenderer GORE_LAYER = new();
 
     [OnLoad]
     public static void Load()
@@ -30,15 +30,15 @@ public static class ParticleEngine
     {
         orig(self);
 
-        Particles.Update();
-        GoreLayer.Update();
+        PARTICLES.Update();
+        GORE_LAYER.Update();
     }
 
     private static void DrawParticles(On_Main.orig_DrawDust orig, Main self)
     {
         Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
-        Particles.Settings.AnchorPosition = -Main.screenPosition;
-        Particles.Draw(Main.spriteBatch);
+        PARTICLES.Settings.AnchorPosition = -Main.screenPosition;
+        PARTICLES.Draw(Main.spriteBatch);
         Main.spriteBatch.End();
 
         orig(self);
@@ -47,8 +47,8 @@ public static class ParticleEngine
     private static void DrawGoreParticles(On_Main.orig_DrawGore orig, Main self)
     {
         //Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
-        GoreLayer.Settings.AnchorPosition = -Main.screenPosition;
-        GoreLayer.Draw(Main.spriteBatch);
+        GORE_LAYER.Settings.AnchorPosition = -Main.screenPosition;
+        GORE_LAYER.Draw(Main.spriteBatch);
         //Main.spriteBatch.End();
 
         orig(self);

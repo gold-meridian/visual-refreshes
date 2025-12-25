@@ -49,12 +49,12 @@ public enum VanillaTreeStyle
     VanityWillow1 = 30,
 
     Ash1 = 31,
-    
+
     Count = 32,
 }
 
 /// <summary>
-///     Common groupings of <see cref="VanillaTreeStyle"/>s.
+///     Common groupings of <see cref="VanillaTreeStyle" />s.
 /// </summary>
 public static class VanillaTreeStyles
 {

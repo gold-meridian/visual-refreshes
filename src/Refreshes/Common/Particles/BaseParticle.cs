@@ -4,7 +4,7 @@ using Terraria.Graphics.Renderers;
 
 namespace Refreshes.Common.Particles;
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public class PoolCapacityAttribute(int size) : Attribute
 {
     public int Capacity { get; } = size;
