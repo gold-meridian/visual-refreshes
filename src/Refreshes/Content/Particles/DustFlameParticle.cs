@@ -25,7 +25,7 @@ public class DustFlameParticle : BaseParticle<DustFlameParticle>
     public static DustFlameParticle RequestNew(Vector2 position, Vector2 velocity, Color color, Color insideColor, float scale, int lifeTime = 20)
     {
         var particle = Pool.RequestParticle();
-		particle.Position = position;
+        particle.Position = position;
         particle.Velocity = velocity;
         particle.ColorTint = color;
         particle.ColorInsideTint = insideColor;

@@ -57,7 +57,7 @@ public abstract class GemTreeRenderer
 }
 
 /// <summary>
-///     The default implementation of <see cref="GemTreeRenderer"/> for gem
+///     The default implementation of <see cref="GemTreeRenderer" /> for gem
 ///     trees.
 /// </summary>
 internal sealed class TreeRenderer : GemTreeRenderer
@@ -110,7 +110,7 @@ internal sealed class TreeRenderer : GemTreeRenderer
 }
 
 /// <summary>
-///     The default implementation of <see cref="GemTreeRenderer"/> for gem
+///     The default implementation of <see cref="GemTreeRenderer" /> for gem
 ///     tree saplings.
 /// </summary>
 internal sealed class SaplingRenderer : GemTreeRenderer

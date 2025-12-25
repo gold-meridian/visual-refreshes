@@ -9,7 +9,7 @@ namespace Refreshes.Common;
 ///     Contextualizes a gem tree rendering request.
 /// </summary>
 /// <param name="Renderer">
-///     The <see cref="GemTreeRenderer"/> instance responsible for rendering the
+///     The <see cref="GemTreeRenderer" /> instance responsible for rendering the
 ///     tile.
 /// </param>
 /// <param name="CurrentBiome">The ID of the current biome.</param>
@@ -43,7 +43,7 @@ public static class GemTreeRendering
         ];
 
         /// <summary>
-        ///     The given <see cref="GemTreeRenderer"/> to use for a tile ID.
+        ///     The given <see cref="GemTreeRenderer" /> to use for a tile ID.
         /// </summary>
         public static GemTreeRenderer?[] GemTreeRenderers { get; private set; } = [];
 

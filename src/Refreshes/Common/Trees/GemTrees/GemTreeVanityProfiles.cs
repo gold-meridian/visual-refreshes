@@ -12,19 +12,19 @@ namespace Refreshes.Common;
 /// <param name="TrunkGems">
 ///     The gem texture to pair with the tree trunk.
 ///     <br />
-///     If <see langword="null"/>, the default gem textures will be used.
+///     If <see langword="null" />, the default gem textures will be used.
 /// </param>
 /// <param name="Branches">The unique tree branches texture.</param>
 /// <param name="BranchesGems">
 ///     The gem texture to pair with the tree branches.
 ///     <br />
-///     If <see langword="null"/>, the default gem textures will be used.
+///     If <see langword="null" />, the default gem textures will be used.
 /// </param>
 /// <param name="Tops">The unique tree top texture.</param>
 /// <param name="TopsGems">
 ///     The gem texture to pair with the tree tops.
 ///     <br />
-///     If <see langword="null"/>, the default gem textures will be used.
+///     If <see langword="null" />, the default gem textures will be used.
 /// </param>
 public readonly record struct GemTreeVanityDescription(
     Asset<Texture2D> Trunk,
@@ -43,7 +43,7 @@ public readonly record struct GemTreeVanityDescription(
 /// <param name="SaplingGems">
 ///     The gem texture to pair with the tree sapling.
 ///     <br />
-///     If <see langword="null"/>, the default gem textures will be used.
+///     If <see langword="null" />, the default gem textures will be used.
 /// </param>
 public readonly record struct GemTreeVanitySaplingDescription(
     Asset<Texture2D> Sapling,
@@ -76,7 +76,7 @@ public readonly record struct GemTreeVanityProfile(
 {
     /// <summary>
     ///     Gets the most applicable description for this vanity profile,
-    ///     returning the <see cref="Purity"/> description if no suitable
+    ///     returning the <see cref="Purity" /> description if no suitable
     ///     profile is found for the biome.
     /// </summary>
     public GemTreeVanityDescription GetDescription(int biomeId)
@@ -91,7 +91,7 @@ public readonly record struct GemTreeVanityProfile(
 
     /// <summary>
     ///     Gets the most applicable sapling description for this vanity
-    ///     profile, returning the <see cref="PuritySaplings"/> description if
+    ///     profile, returning the <see cref="PuritySaplings" /> description if
     ///     no suitable profile is found for the biome.
     /// </summary>
     public GemTreeVanitySaplingDescription GetSaplingDescription(int biomeId)
@@ -532,12 +532,12 @@ public static class GemTreeVanityProfiles
 
     /// <summary>
     ///     Gets the vanilla gem tree profile corresponding to the tree
-    ///     <paramref cref="tileId"/>.
+    ///     <paramref cref="tileId" />.
     /// </summary>
     /// <param name="tileId">The tree tile ID to get the profile for.</param>
     /// <returns>
     ///     The gem tree profile, assuming one exists for
-    ///     <paramref name="tileId"/>; otherwise, <see langword="null"/>.
+    ///     <paramref name="tileId" />; otherwise, <see langword="null" />.
     /// </returns>
     public static GemTreeVanityProfile? GetProfile(int tileId)
     {

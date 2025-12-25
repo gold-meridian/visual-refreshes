@@ -77,22 +77,22 @@ public sealed class NewRainbowRod : GlobalProjectile
         Main.spriteBatch.End(out var ss);
         Main.spriteBatch.Begin(ss with { SortMode = SpriteSortMode.Immediate });
 
-		// Trail
+        // Trail
 
-		var stripEffect = Assets.Shaders.Weapons.RainbowRodTrail.CreateRainbowRodPass();
-		stripEffect.Parameters.uTexture0 = Assets.Images.Sample.Worley.Asset.Value;
+        var stripEffect = Assets.Shaders.Weapons.RainbowRodTrail.CreateRainbowRodPass();
+        stripEffect.Parameters.uTexture0 = Assets.Images.Sample.Worley.Asset.Value;
         stripEffect.Parameters.uWidth = 15f;
-		stripEffect.Parameters.uTransformMatrix = Main.GameViewMatrix.NormalizedTransformationmatrix;
-		stripEffect.Parameters.uImage0 = new HlslSampler
-		{
-			Texture = TextureAssets.Extra[ExtrasID.MagicMissileTrailShape].Value,
-		};
-		stripEffect.Apply();
+        stripEffect.Parameters.uTransformMatrix = Main.GameViewMatrix.NormalizedTransformationmatrix;
+        stripEffect.Parameters.uImage0 = new HlslSampler
+        {
+            Texture = TextureAssets.Extra[ExtrasID.MagicMissileTrailShape].Value,
+        };
+        stripEffect.Apply();
 
-		StripRenderer.DrawStripPadded(projectile.oldPos, projectile.oldRot, ColorFunction, WidthFunction, projectile.Size / 2 - Main.screenPosition);
+        StripRenderer.DrawStripPadded(projectile.oldPos, projectile.oldRot, ColorFunction, WidthFunction, projectile.Size / 2 - Main.screenPosition);
 
         // Head
-		Main.pixelShader.CurrentTechnique.Passes[0].Apply();
+        Main.pixelShader.CurrentTechnique.Passes[0].Apply();
 
         var texture = Assets.Images.Sample.Tweaks.RainbowRodFlame.Asset.Value;
         var animateFrame = (int)(Main.GlobalTimeWrappedHourly * 12 % 5);
@@ -117,10 +117,10 @@ public sealed class NewRainbowRod : GlobalProjectile
         var sparkleScale = 1f + MathF.Sin(Main.GlobalTimeWrappedHourly * 6f) * 0.05f;
         Main.EntitySpriteDraw(sparkle, projectile.Center - Main.screenPosition, sparkle.Frame(), glowColor * 0.5f, MathHelper.PiOver2, sparkle.Size() / 2, projectile.scale * new Vector2(0.5f, 3f * sparkleScale), 0);
 
-		Main.spriteBatch.End();
-		Main.spriteBatch.Begin(ss);
+        Main.spriteBatch.End();
+        Main.spriteBatch.Begin(ss);
 
-		return false;
+        return false;
 
         static Color ColorFunction(float progress)
         {
@@ -132,7 +132,7 @@ public sealed class NewRainbowRod : GlobalProjectile
             var i = (int)Math.Clamp(Math.Floor(progress * ProjectileID.Sets.TrailCacheLength[projectile.type]), 0, ProjectileID.Sets.TrailCacheLength[projectile.type] - 1);
 
             var width = Utils.GetLerpValue(0f, 30f, projectile.oldPos[i].Distance(projectile.position) + projectile.velocity.LengthSquared(), true);
-            return (15f + MathF.Sin(progress * 17f - Main.GlobalTimeWrappedHourly * 20f) * 3f)  * Utils.GetLerpValue(-0.07f, 0.03f, progress, true) * (1f - MathF.Cbrt(progress) * 0.3f) * width;
+            return (15f + MathF.Sin(progress * 17f - Main.GlobalTimeWrappedHourly * 20f) * 3f) * Utils.GetLerpValue(-0.07f, 0.03f, progress, true) * (1f - MathF.Cbrt(progress) * 0.3f) * width;
         }
     }
 }

@@ -5,22 +5,22 @@ namespace Refreshes.Common.Rendering;
 
 public static class StripRenderer
 {
-	public struct StripVertexData : IVertexType
-	{
-		public Vector2 Position;
-		public Color Color;
-		public Vector3 TextureCoordinate;
+    public struct StripVertexData : IVertexType
+    {
+        public Vector2 Position;
+        public Color Color;
+        public Vector3 TextureCoordinate;
 
-		public VertexDeclaration VertexDeclaration => Declaration;
+        public VertexDeclaration VertexDeclaration => Declaration;
 
-		private static readonly VertexDeclaration Declaration = new(
-			new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0),
-			new VertexElement(8, VertexElementFormat.Color, VertexElementUsage.Color, 0),
-			new VertexElement(12, VertexElementFormat.Vector3, VertexElementUsage.TextureCoordinate, 0)
-		);
-	}
+        private static readonly VertexDeclaration Declaration = new(
+            new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0),
+            new VertexElement(8, VertexElementFormat.Color, VertexElementUsage.Color, 0),
+            new VertexElement(12, VertexElementFormat.Vector3, VertexElementUsage.TextureCoordinate, 0)
+        );
+    }
 
-	public delegate Color StripColorFunction(float progressAlongStrip);
+    public delegate Color StripColorFunction(float progressAlongStrip);
 
     public delegate float StripWidthFunction(float progressAlongStrip);
 
