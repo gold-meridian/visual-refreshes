@@ -22,4 +22,8 @@
         <Using Include="Terraria"/>
         <Using Include="Terraria.ModLoader"/>
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Assets\Images\Extras\" />
+    </ItemGroup>
 </Project>
