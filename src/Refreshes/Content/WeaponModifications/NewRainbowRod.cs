@@ -1,5 +1,4 @@
 ﻿using System;
-using Daybreak.Common.Features.Rendering;
 using Daybreak.Common.Rendering;
 using Refreshes.Common.Particles;
 using Refreshes.Common.Rendering;
@@ -12,28 +11,9 @@ namespace Refreshes.Content;
 
 public sealed class NewRainbowRod : GlobalProjectile
 {
-    private readonly struct RainbowRodPreRenderer : IPreRenderedItem
-    {
-        public void PreRender(Texture2D sourceTexture)
-        {
-            var shader = Assets.Shaders.Weapons.RainbowRodItem.CreateHueShader();
-            shader.Apply();
-
-            Main.spriteBatch.Draw(sourceTexture, Vector2.Zero, Color.White);
-        }
-    }
-
     public override bool AppliesToEntity(Projectile entity, bool lateInstantiation)
     {
         return entity.type == ProjectileID.RainbowRodBullet;
-    }
-
-    public override void SetStaticDefaults()
-    {
-        base.SetStaticDefaults();
-
-        // Assets.Shaders.Misc.Weapons.RainbowRodItem.Asset.Wait();
-        // DaybreakItemSets.PreRenderedItems[ItemID.RainbowRod] = new RainbowRodPreRenderer();
     }
 
     public override void AI(Projectile projectile)

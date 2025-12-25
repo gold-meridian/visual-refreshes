@@ -5,7 +5,7 @@ using Refreshes.Common.Particles;
 using Terraria.Audio;
 using Terraria.Graphics.Renderers;
 
-namespace Refreshes.Content.BottleAccessories;
+namespace Refreshes.Content;
 
 internal sealed class CloudInABottleModifications
 {

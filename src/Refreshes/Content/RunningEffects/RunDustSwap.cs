@@ -4,7 +4,7 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using Terraria.Graphics.Shaders;
 
-namespace Refreshes.Content.RunningEffects;
+namespace Refreshes.Content;
 
 internal sealed class RunDustSwap
 {
