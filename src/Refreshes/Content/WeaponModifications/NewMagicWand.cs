@@ -1,8 +1,10 @@
 ﻿using System;
 using Daybreak.Common.Rendering;
+using Refreshes.Common.Particles;
 using Refreshes.Common.Rendering;
 using Refreshes.Core;
 using Terraria.GameContent;
+using Terraria.GameContent.Drawing;
 using Terraria.ID;
 
 namespace Refreshes.Content;
@@ -20,9 +22,20 @@ public sealed class NewMagicWand : GlobalProjectile
 
         if (Main.rand.NextBool() && projectile.velocity.Length() > 2f)
         {
-            var dust = Dust.NewDustPerfect(projectile.Center, DustID.GemSapphire, projectile.velocity * 0.5f + Main.rand.NextVector2Circular(2, 2), Scale: Main.rand.NextFloat(0.2f, 1.5f));
-            dust.fadeIn = 1f;
+            var dust = Dust.NewDustPerfect(projectile.Center, DustID.MagicMirror, projectile.velocity * 0.2f + Main.rand.NextVector2Circular(2, 2), Alpha: 255, Scale: Main.rand.NextFloat(0.2f, 1.5f));
+            dust.fadeIn = 0.75f;
             dust.noGravity = true;
+        }
+
+        if (Main.rand.NextBool(9))
+        {
+            var sparkle = ParticleOrchestrator._poolPrettySparkle.RequestParticle();
+            sparkle.SetBasicInfo(TextureAssets.Extra[ExtrasID.SharpTears], null, projectile.velocity * 0.1f + Main.rand.NextVector2Circular(2, 2), projectile.Center);
+            sparkle.ColorTint = Color.Lerp(Color.Cyan, Color.BlueViolet, Main.rand.NextFloat()) with { A = 0 } * 0.5f;
+            sparkle.Scale = new Vector2(1f, 0.5f);
+            sparkle.TimeToLive = Main.rand.Next(30, 50);
+
+            ParticleEngine.PARTICLES.Add(sparkle);
         }
 
         // Specifically to disable the godawful Magic Missile casting sound that
