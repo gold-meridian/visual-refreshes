@@ -114,10 +114,10 @@ internal sealed class NewTerrarian : GlobalProjectile
         {
             var dust = Dust.NewDustPerfect
             (
-                Main.rand.NextFromList(previousPositions) + projectile.Size * 0.5f + Main.rand.NextVector2Circular(1f, 1f),
+                Main.rand.NextFromList(previousPositions) + projectile.Size * 0.5f + Main.rand.NextVector2Circular(4f, 4f),
                 ModContent.DustType<LightDotRGB>(),
                 Main.rand.NextVector2Circular(4f, 4f),
-                Scale: 1.5f,
+                Scale: 1f,
                 newColor: Color.Lerp(Color.White, Color.SpringGreen, Main.rand.NextFloat())
             );
             dust.fadeIn = Main.rand.NextFloat(0.1f, 0.3f);
@@ -127,10 +127,10 @@ internal sealed class NewTerrarian : GlobalProjectile
         {
             var headDust = Dust.NewDustPerfect
             (
-                projectile.Center,
+                projectile.Center + Main.rand.NextVector2Circular(4f, 4f),
                 ModContent.DustType<LightDotRGB>(),
                 projectile.velocity * 0.5f + Main.rand.NextVector2Circular(2f, 2f),
-                Scale: 1.5f,
+                Scale: 1f,
                 newColor: Color.Lerp(Color.White, Color.SpringGreen, Main.rand.NextFloat())
             );
             headDust.fadeIn = Main.rand.NextFloat(0.05f, 0.15f);
@@ -240,10 +240,11 @@ internal sealed class NewTerrarianBeam : GlobalProjectile
         {
             var headDust = Dust.NewDustPerfect
             (
-                projectile.Center + Main.rand.NextVector2Circular(2f, 2f),
+                projectile.Center + Main.rand.NextVector2Circular(4f, 4f),
                 ModContent.DustType<LightDotRGB>(),
                 projectile.velocity * 0.5f + Main.rand.NextVector2Circular(2f, 2f),
-                Scale: 1.5f,
+                Scale: 1f * projectile.Opacity,
+                Alpha: projectile.alpha,
                 newColor: Color.Lerp(Color.White, MainColor(), Main.rand.NextFloat())
             );
             headDust.fadeIn = Main.rand.NextFloat(0.05f, 0.15f);
