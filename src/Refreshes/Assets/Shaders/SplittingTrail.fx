@@ -4,7 +4,11 @@ matrix uTransformMatrix;
 
 float uSplitProgressStart;
 float uSplitProgressEnd;
-float uSplitWidth;
+
+float uSplitWidthProgressStart;
+float uSplitWidthProgressEnd;
+float uSplitWidthStart;
+float uSplitWidthEnd;
 
 struct VertexShaderInput
 {
@@ -41,7 +45,8 @@ float4 PixelShaderFunction(in VertexShaderOutput input) : COLOR0
     float2 normalizedUv = uv * 2.0 - 1.0;
 
     float splitProgress = saturate(inverselerp(uSplitProgressStart, uSplitProgressEnd, uv.x));
-    float splitWidth = lerp(0, uSplitWidth, splitProgress);
+	float splitWidthProgress = saturate(inverselerp(uSplitWidthProgressStart, uSplitWidthProgressEnd, uv.x));
+    float splitWidth = lerp(0.0, lerp(uSplitWidthStart, uSplitWidthEnd, splitWidthProgress), splitProgress);
     if (abs(normalizedUv.y) < splitWidth)
         return 0.0;
     return input.Color;
