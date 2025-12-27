@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Terraria;
 using Terraria.GameContent;
 using Terraria.Graphics.Renderers;
 using Terraria.ID;
@@ -26,7 +27,6 @@ internal sealed class NewTerrarian : GlobalProjectile
     private float TrailWidth(float p) => float.Lerp(6f, 12f, p);
 
     private const float trail_offset_amplitude = 10f;
-    private const float trail_offset_period = 0.2f;
     private const float trail_offset_phase = 1f;
 
     private const float trail_split_width_start = 0.65f;
@@ -38,11 +38,16 @@ internal sealed class NewTerrarian : GlobalProjectile
 
     private const float trail_fadeoff_length = 120f;
 
-    private Vector2[]? previousPositions;
-    private Vector2[]? previousDirections;
-    private float[]? previousOffsetPhases;
-    private Vector2[]? previousOffsetPositions;
-    private float[]? previousRotations;
+    [AllowNull]
+    private Vector2[] previousPositions;
+    [AllowNull]
+    private Vector2[] previousDirections;
+    [AllowNull]
+    private float[] previousOffsetPhases;
+    [AllowNull]
+    private Vector2[] previousOffsetPositions;
+    [AllowNull]
+    private float[] previousRotations;
     private float currentPhase;
     private float totalDistance;
 
@@ -53,7 +58,7 @@ internal sealed class NewTerrarian : GlobalProjectile
         return entity.type == ProjectileID.Terrarian;
     }
 
-    public override void PostAI(Projectile projectile)
+    private void InitializeArrays(Projectile projectile)
     {
         if (previousPositions == null || previousDirections == null || previousOffsetPhases == null || previousOffsetPositions == null || previousRotations == null)
         {
@@ -72,6 +77,11 @@ internal sealed class NewTerrarian : GlobalProjectile
                 previousRotations[i] = previousDirections[i].ToRotation();
             }
         }
+    }
+
+    public override void PostAI(Projectile projectile)
+    {
+        InitializeArrays(projectile);
 
         for (var i = previousPositions.Length - 1; i > 0; i--)
         {
@@ -100,27 +110,37 @@ internal sealed class NewTerrarian : GlobalProjectile
             totalDistance += (previousPositions[i + 1] - previousPositions[i]).Length();
         }
 
-        /*
         if (Main.rand.NextBool(3))
         {
             var dust = Dust.NewDustPerfect
             (
-                Main.rand.NextFromList(previousPositions) + projectile.Size * 0.5f + Main.rand.NextVector2Circular(1f, 1f), 
+                Main.rand.NextFromList(previousPositions) + projectile.Size * 0.5f + Main.rand.NextVector2Circular(1f, 1f),
                 ModContent.DustType<LightDotRGB>(),
-                Main.rand.NextVector2Circular(1f, 1f),
+                Main.rand.NextVector2Circular(4f, 4f),
                 Scale: 1.5f,
                 newColor: Color.Lerp(Color.White, Color.SpringGreen, Main.rand.NextFloat())
             );
             dust.fadeIn = Main.rand.NextFloat(0.1f, 0.3f);
             dust.noGravity = true;
         }
-        */
+        if (Main.rand.NextBool(5))
+        {
+            var headDust = Dust.NewDustPerfect
+            (
+                projectile.Center,
+                ModContent.DustType<LightDotRGB>(),
+                projectile.velocity * 0.5f + Main.rand.NextVector2Circular(2f, 2f),
+                Scale: 1.5f,
+                newColor: Color.Lerp(Color.White, Color.SpringGreen, Main.rand.NextFloat())
+            );
+            headDust.fadeIn = Main.rand.NextFloat(0.05f, 0.15f);
+            headDust.noGravity = true;
+        }
     }
 
     public override bool PreDraw(Projectile projectile, ref Color lightColor)
     {
-        Debug.Assert(previousOffsetPositions != null);
-        Debug.Assert(previousRotations != null);
+        InitializeArrays(projectile);
 
         var yoyoTexture = TextureAssets.Projectile[ProjectileID.Terrarian].Value;
 
@@ -163,10 +183,19 @@ internal sealed class NewTerrarian : GlobalProjectile
 
 internal sealed class NewTerrarianBeam : GlobalProjectile
 {
+    private static readonly Color trail_color_start = new Color(1f, 1f, 1f) * 0.5f;
+    private Color TrailColorEnd() => MainColor() * 0.5f;
+
+    private Color MainColor() => Main.hslToRgb(0.3f + Hue, 1f, 0.5f);
+
+    private float TrailWidth(float p) => float.Lerp(8f, 12f, p);
+
     public float Hue { get; private set; }
 
-    private Vector2[]? previousPositions;
-    private float[]? previousRotations;
+    [AllowNull]
+    private Vector2[] previousPositions;
+    [AllowNull]
+    private float[] previousRotations;
 
     public override bool InstancePerEntity => true;
 
@@ -177,10 +206,10 @@ internal sealed class NewTerrarianBeam : GlobalProjectile
 
     public override void SetDefaults(Projectile entity)
     {
-        Hue = Main.rand.NextFloat(-0.05f, 0.15f);
+        Hue = Main.rand.NextFloat(0f, 0.2f);
     }
 
-    public override void PostAI(Projectile projectile)
+    private void InitializeArrays(Projectile projectile)
     {
         if (previousPositions == null || previousRotations == null)
         {
@@ -193,6 +222,11 @@ internal sealed class NewTerrarianBeam : GlobalProjectile
                 previousRotations[i] = projectile.velocity.ToRotation();
             }
         }
+    }
+
+    public override void PostAI(Projectile projectile)
+    {
+        InitializeArrays(projectile);
 
         for (var i = previousPositions.Length - 1; i > 0; i--)
         {
@@ -201,6 +235,20 @@ internal sealed class NewTerrarianBeam : GlobalProjectile
         }
         previousPositions[0] = projectile.position + projectile.velocity;
         previousRotations[0] = projectile.velocity.ToRotation();
+
+        if (Main.rand.NextBool(5))
+        {
+            var headDust = Dust.NewDustPerfect
+            (
+                projectile.Center + Main.rand.NextVector2Circular(2f, 2f),
+                ModContent.DustType<LightDotRGB>(),
+                projectile.velocity * 0.5f + Main.rand.NextVector2Circular(2f, 2f),
+                Scale: 1.5f,
+                newColor: Color.Lerp(Color.White, MainColor(), Main.rand.NextFloat())
+            );
+            headDust.fadeIn = Main.rand.NextFloat(0.05f, 0.15f);
+            headDust.noGravity = true;
+        }
     }
 
     public override Color? GetAlpha(Projectile projectile, Color lightColor)
@@ -210,10 +258,9 @@ internal sealed class NewTerrarianBeam : GlobalProjectile
 
     public override bool PreDraw(Projectile projectile, ref Color lightColor)
     {
-        Debug.Assert(previousPositions != null);
-        Debug.Assert(previousRotations != null);
+        InitializeArrays(projectile);
 
-        var yoyoTexture = TextureAssets.Projectile[ProjectileID.TerrarianBeam].Value;
+        var yoyoTexture = Assets.Images.Extras.TerrarianBeam.Asset.Value;
 
         var textureCenter = yoyoTexture.Size() * 0.5f;
         var positionOffset = textureCenter + new Vector2(0, projectile.gfxOffY);
@@ -233,15 +280,10 @@ internal sealed class NewTerrarianBeam : GlobalProjectile
 
         Color StripColorFunction(float p)
         {
-            return Color.Lerp(Main.hslToRgb(0.3f + Hue, 1f, 0.5f), Color.Transparent, p) * projectile.Opacity;
+            return Color.Lerp(Color.Lerp(trail_color_start, TrailColorEnd(), p), Color.Transparent, p) * projectile.Opacity;
         }
 
-        float StripWidthFunction(float p)
-        {
-            return float.Lerp(8f, 12f, p);
-        }
-
-        StripRenderer.DrawStripPadded(previousPositions, previousRotations, StripColorFunction, StripWidthFunction, positionOffset - Main.screenPosition, false);
+        StripRenderer.DrawStripPadded(previousPositions, previousRotations, StripColorFunction, TrailWidth, positionOffset - Main.screenPosition, false);
 
         Main.pixelShader.CurrentTechnique.Passes[0].Apply();
 
@@ -257,7 +299,10 @@ internal sealed class NewTerrarianBeam : GlobalProjectile
             CustomEffect = shader
         });
 
-        Main.spriteBatch.Draw(yoyoTexture, projectile.position - Main.screenPosition + positionOffset, null, projectile.GetAlpha(lightColor), projectile.rotation, textureCenter, projectile.scale, spriteDirection, 0f);
+        var fadeOutColor = Color.Lerp(Color.White, MainColor(), 1f - projectile.Opacity);
+        var finalColor = new Color(projectile.GetAlpha(lightColor).ToVector4() * fadeOutColor.ToVector4());
+
+        Main.spriteBatch.Draw(yoyoTexture, projectile.position - Main.screenPosition + positionOffset, null, finalColor, projectile.rotation, textureCenter, projectile.scale, spriteDirection, 0f);
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(spriteBatchSnapshot);
