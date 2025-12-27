@@ -226,9 +226,9 @@ internal sealed class NewTerrarianBeam : GlobalProjectile
         trailShader.Parameters.uSplitProgressStart = 0f;
         trailShader.Parameters.uSplitProgressEnd = 0.5f;
         trailShader.Parameters.uSplitWidthProgressStart = 0.5f;
-        trailShader.Parameters.uSplitWidthProgressStart = 1f;
+        trailShader.Parameters.uSplitWidthProgressEnd = 1f;
         trailShader.Parameters.uSplitWidthStart = 0.5f;
-        trailShader.Parameters.uSplitWidthEnd = 0.8f;
+        trailShader.Parameters.uSplitWidthEnd = 1f;
         trailShader.Apply();
 
         Color StripColorFunction(float p)
