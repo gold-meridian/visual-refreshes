@@ -38,6 +38,11 @@ internal sealed class NewTerrarian : GlobalProjectile
 
     private const float trail_fadeoff_length = 120f;
 
+    private static readonly Color flare_color = new Color(0.4f, 1f, 0.6f);
+    private static readonly Color flare_color_shine = new Color(1f, 1f, 1f, 0f);
+
+    private const float flare_phase = 0.075f;
+
     [AllowNull]
     private Vector2[] previousPositions;
     [AllowNull]
@@ -48,8 +53,10 @@ internal sealed class NewTerrarian : GlobalProjectile
     private Vector2[] previousOffsetPositions;
     [AllowNull]
     private float[] previousRotations;
-    private float currentPhase;
+    private float trailCurrentPhase;
     private float totalDistance;
+
+    private float flareCounter;
 
     public override bool InstancePerEntity => true;
 
@@ -83,6 +90,7 @@ internal sealed class NewTerrarian : GlobalProjectile
     {
         InitializeArrays(projectile);
 
+        #region Trail position-related code
         for (var i = previousPositions.Length - 1; i > 0; i--)
         {
             previousPositions[i] = previousPositions[i - 1];
@@ -91,10 +99,10 @@ internal sealed class NewTerrarian : GlobalProjectile
             previousRotations[i] = previousRotations[i - 1];
         }
 
-        currentPhase += trail_offset_phase;
+        trailCurrentPhase += trail_offset_phase;
         previousPositions[0] = projectile.position + projectile.velocity;
         previousDirections[0] = projectile.velocity.SafeNormalize(Vector2.Zero);
-        previousOffsetPhases[0] = currentPhase;
+        previousOffsetPhases[0] = trailCurrentPhase;
         previousRotations[0] = previousDirections[0].ToRotation();
 
         for (var i = 0; i < previousOffsetPositions.Length; i++)
@@ -109,7 +117,9 @@ internal sealed class NewTerrarian : GlobalProjectile
         {
             totalDistance += (previousPositions[i + 1] - previousPositions[i]).Length();
         }
+        #endregion
 
+        #region Dust spawning
         if (Main.rand.NextBool(3))
         {
             var dust = Dust.NewDustPerfect
@@ -136,6 +146,10 @@ internal sealed class NewTerrarian : GlobalProjectile
             headDust.fadeIn = Main.rand.NextFloat(0.05f, 0.15f);
             headDust.noGravity = true;
         }
+        #endregion
+
+        flareCounter += flare_phase;
+        flareCounter = flareCounter % 1f;
     }
 
     public override bool PreDraw(Projectile projectile, ref Color lightColor)
@@ -145,7 +159,6 @@ internal sealed class NewTerrarian : GlobalProjectile
         var yoyoTexture = TextureAssets.Projectile[ProjectileID.Terrarian].Value;
 
         var textureCenter = yoyoTexture.Size() * 0.5f;
-        var positionOffset = textureCenter + new Vector2(0, projectile.gfxOffY);
 
         var trailTexture = TextureAssets.MagicPixel.Value;
 
@@ -169,13 +182,20 @@ internal sealed class NewTerrarian : GlobalProjectile
             return Color.Lerp(Color.Lerp(trail_color_start, trail_color_end, trailFadeoffProgress), Color.Transparent, trailFadeoffProgress);
         }
 
-        StripRenderer.DrawStripPadded(previousOffsetPositions, previousRotations, StripColorFunction, TrailWidth, positionOffset - Main.screenPosition, false);
+        StripRenderer.DrawStripPadded(previousOffsetPositions, previousRotations, StripColorFunction, TrailWidth, projectile.Size * 0.5f - Main.screenPosition, false);
 
         Main.pixelShader.CurrentTechnique.Passes[0].Apply();
 
         var spriteDirection = projectile.spriteDirection == -1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
 
-        Main.spriteBatch.Draw(yoyoTexture, projectile.position - Main.screenPosition + positionOffset, null, projectile.GetAlpha(lightColor), projectile.rotation, textureCenter, projectile.scale, spriteDirection, 0f);
+        Main.spriteBatch.Draw(yoyoTexture, projectile.Center - Main.screenPosition, null, projectile.GetAlpha(lightColor), projectile.rotation, textureCenter, projectile.scale, spriteDirection, 0f);
+
+        var flareScaleProgress = Utils.PingPongFrom01To010(flareCounter);
+        var flareScale = float.Lerp(0.5f, 1f, flareScaleProgress);
+        Main.DrawPrettyStarSparkle(projectile.Opacity, SpriteEffects.None, projectile.Center - Main.screenPosition, flare_color_shine * 0.5f, flare_color * 0.5f, 1f, 0f, 1f, 2f, 2f, 0f, new Vector2(flareScale) * projectile.scale, Vector2.One * projectile.scale * 1.5f);
+        var diagonalFlareScaleProgress = Utils.PingPongFrom01To010((flareCounter + 0.5f) % 1f);
+        var diagonalFlareScale = float.Lerp(0.5f, 1f, diagonalFlareScaleProgress);
+        Main.DrawPrettyStarSparkle(projectile.Opacity, SpriteEffects.None, projectile.Center - Main.screenPosition, flare_color_shine * 0.5f, flare_color * 0.5f, 1f, 0f, 1f, 2f, 2f, MathF.PI * 0.25f, new Vector2(diagonalFlareScale) * projectile.scale, Vector2.One * projectile.scale);
 
         return false;
     }
