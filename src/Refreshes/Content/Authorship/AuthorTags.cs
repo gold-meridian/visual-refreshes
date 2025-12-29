@@ -23,3 +23,9 @@ internal class TomatTag : Daybreak.Content.Authorship.TomatTag;
 
 [UsedImplicitly]
 internal class BlockarozTag : Daybreak.Content.Authorship.BlockarozTag;
+
+[UsedImplicitly]
+internal class BabyBlueSheepTag : CommonAuthorTag;
+
+[UsedImplicitly]
+internal class RotonTag : CommonAuthorTag;
