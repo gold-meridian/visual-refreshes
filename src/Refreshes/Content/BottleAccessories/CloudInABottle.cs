@@ -180,6 +180,7 @@ internal static class CloudInABottle
         public float Scale;
         public float ShrinkRate;
         public Vector2 Velocity;
+        private bool flip;
 
         public override void FetchFromPool()
         {
@@ -187,6 +188,7 @@ internal static class CloudInABottle
 
             Alpha = 1f;
             ShrinkRate = Main.rand.NextFloat(0.91f, 0.95f);
+            flip = Main.rand.NextBool(5);
         }
 
         public override void Update(ref ParticleRendererSettings settings)
@@ -210,6 +212,7 @@ internal static class CloudInABottle
             
             var lightColor = Lighting.GetColor(Position.ToTileCoordinates());
             var color = lightColor * Alpha;
+            var effects = flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
 
             spriteBatch.Draw(
                 new DrawParameters(tex)
@@ -218,6 +221,7 @@ internal static class CloudInABottle
                     Color = color,
                     Origin = origin,
                     Scale = new Vector2(Scale),
+                    Effects = effects
                 }
             );
         }
