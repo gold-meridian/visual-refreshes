@@ -1,6 +1,8 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Daybreak.Common.Features.Hooks;
 using Daybreak.Common.Features.Models;
+using Daybreak.Common.Mathematics;
 using Daybreak.Common.Rendering;
 using Refreshes.Common.Particles;
 using Terraria.Audio;
@@ -36,57 +38,6 @@ internal static class CloudInABottle
                 () =>
                 {
                     data.CloudLease.Dispose();
-                }
-            );
-        }
-    }
-
-    [PoolCapacity(300)]
-    private sealed class CloudJumpParticle : BaseParticle<CloudJumpParticle>
-    {
-        public float Alpha;
-        public Vector2 Position;
-        public float Scale;
-        public float ShrinkRate;
-        public Vector2 Velocity;
-
-        public override void FetchFromPool()
-        {
-            base.FetchFromPool();
-
-            Alpha = 1f;
-            ShrinkRate = Main.rand.NextFloat(0.91f, 0.95f);
-        }
-
-        public override void Update(ref ParticleRendererSettings settings)
-        {
-            Position += Velocity;
-            Velocity *= 0.94f;
-
-            Scale *= ShrinkRate;
-            Alpha = MathHelper.Clamp(Scale * 2f, 0f, 1f);
-
-            if (Alpha <= 0 || Scale <= 0.1f)
-            {
-                ShouldBeRemovedFromRenderer = true;
-            }
-        }
-
-        public override void Draw(ref ParticleRendererSettings settings, SpriteBatch spriteBatch)
-        {
-            var tex = Assets.Images.Particles.Circle.Asset.Value;
-            var origin = tex.Size() / 2;
-            
-            var lightColor = Lighting.GetColor(Position.ToTileCoordinates());
-            var color = lightColor * Alpha;
-
-            spriteBatch.Draw(
-                new DrawParameters(tex)
-                {
-                    Position = Position + settings.AnchorPosition,
-                    Color = color,
-                    Origin = origin,
-                    Scale = new Vector2(Scale),
                 }
             );
         }
@@ -151,9 +102,23 @@ internal static class CloudInABottle
         playSound = false;
 
         SoundEngine.PlaySound(Assets.Sounds.Items.CloudJump.Asset with { PitchVariance = 0.3f, Pitch = 0f });
-
         
-        for (int i = 0; i < 3; i++) {
+        var largeParticle = LargeCloudJumpParticle.Pool.RequestParticle();
+
+        largeParticle.Position = player.Bottom;
+        largeParticle.Velocity = -player.velocity * 0.2f;
+        largeParticle.Velocity.Y -= player.velocity.Y * 0.2f;
+        largeParticle.Velocity.X -= player.velocity.X * 0.2f;
+
+        largeParticle.Rotation = Angle.FromRadians(player.velocity.X * 0.05f);
+        
+        largeParticle.Scale = Main.rand.NextFloat(2f, 2.5f);
+
+
+        ParticleEngine.PARTICLES.Add(largeParticle);
+        
+        for (int i = 0; i < 3; i++) 
+        {
             var p = CloudJumpParticle.Pool.RequestParticle();
 
             p.Position = player.Bottom;
@@ -167,7 +132,8 @@ internal static class CloudInABottle
             particles.Add(p);
         }
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) 
+        {
             var p = CloudJumpParticle.Pool.RequestParticle();
 
             p.Position = player.Bottom;
@@ -180,12 +146,13 @@ internal static class CloudInABottle
 
             particles.Add(p);
         }
-        
 
         for (var i = 0; i < 3; i++)
         {
+            var dirVel = Main.rand.NextBool() ? -player.velocity : player.velocity;
+            
             var particleVel = -player.velocity * 0.7f + Main.rand.NextVector2Circular(5, 5);
-            var particle = DustFlameParticle.RequestNew(player.Bottom, particleVel, new Color(84, 134, 237), Color.White, 2, Main.rand.Next(24, 35));
+            var particle = DustFlameParticle.RequestNew(player.Bottom, particleVel, new Color(84, 134, 237) * 0.5f, Color.White, 2, Main.rand.Next(24, 35));
             particle.LossPerFrame = 0.4f;
             particle.Swirly = true;
             particles.Add(particle);
@@ -203,5 +170,109 @@ internal static class CloudInABottle
     public static bool CancelVanillaVisuals(ExtraJump jump)
     {
         return jump != ExtraJump.CloudInABottle;
+    }
+    
+    [PoolCapacity(300)]
+    private sealed class CloudJumpParticle : BaseParticle<CloudJumpParticle>
+    {
+        public float Alpha;
+        public Vector2 Position;
+        public float Scale;
+        public float ShrinkRate;
+        public Vector2 Velocity;
+
+        public override void FetchFromPool()
+        {
+            base.FetchFromPool();
+
+            Alpha = 1f;
+            ShrinkRate = Main.rand.NextFloat(0.91f, 0.95f);
+        }
+
+        public override void Update(ref ParticleRendererSettings settings)
+        {
+            Position += Velocity;
+            Velocity *= 0.94f;
+
+            Scale *= ShrinkRate;
+            Alpha = MathHelper.Clamp(Scale * 2f, 0f, 1f);
+
+            if (Alpha <= 0 || Scale <= 0.1f)
+            {
+                ShouldBeRemovedFromRenderer = true;
+            }
+        }
+
+        public override void Draw(ref ParticleRendererSettings settings, SpriteBatch spriteBatch)
+        {
+            var tex = Assets.Images.Particles.Circle.Asset.Value;
+            var origin = tex.Size() / 2;
+            
+            var lightColor = Lighting.GetColor(Position.ToTileCoordinates());
+            var color = lightColor * Alpha;
+
+            spriteBatch.Draw(
+                new DrawParameters(tex)
+                {
+                    Position = Position + settings.AnchorPosition,
+                    Color = color,
+                    Origin = origin,
+                    Scale = new Vector2(Scale),
+                }
+            );
+        }
+    }
+
+    [PoolCapacity(300)]
+    private sealed class LargeCloudJumpParticle : BaseParticle<LargeCloudJumpParticle>
+    {
+        public Vector2 Position;
+        public float Scale;
+        public float ShrinkRate;
+        public Vector2 Velocity;
+        public Angle Rotation;
+        public float RotationSpeed;
+
+        public override void FetchFromPool()
+        {
+            base.FetchFromPool();
+
+            Rotation = Angle.Zero;
+            RotationSpeed = 0;
+            ShrinkRate = Main.rand.NextFloat(0.91f, 0.95f);
+        }
+
+        public override void Update(ref ParticleRendererSettings settings)
+        {
+            Position += Velocity;
+            Velocity *= 0.94f;
+
+            Scale *= ShrinkRate;
+
+            if (Scale <= 0.1f)
+            {
+                ShouldBeRemovedFromRenderer = true;
+            }
+        }
+
+        public override void Draw(ref ParticleRendererSettings settings, SpriteBatch spriteBatch)
+        {
+            var tex = Assets.Images.Content.BottleAccessories.LargeCloudParticle_1.Asset.Value;
+            var origin = tex.Size() / 2;
+            
+            var lightColor = Lighting.GetColor(Position.ToTileCoordinates());
+            var color = lightColor;
+
+            spriteBatch.Draw(
+                new DrawParameters(tex)
+                {
+                    Position = Position + settings.AnchorPosition,
+                    Color = color,
+                    Origin = origin,
+                    Scale = new Vector2(Scale),
+                    Rotation = Rotation,
+                }
+            );
+        }
     }
 }
