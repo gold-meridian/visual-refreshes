@@ -8,7 +8,7 @@ using Terraria.Audio;
 using Terraria.Graphics.Renderers;
 using Terraria.ID;
 
-namespace Refreshes.Content.HookEffects;
+namespace Refreshes.Content;
 
 [Autoload(Side = ModSide.Client)]
 internal static class VanillaHookEffects
