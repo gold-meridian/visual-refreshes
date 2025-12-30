@@ -14,9 +14,14 @@ float4 MainPS(float4 color : COLOR0, float2 uv : TEXCOORD0) : COLOR0{
     a += tex2D(uImage0, uv + float2(-uTexelSize.x, 0)).a;
     a += tex2D(uImage0, uv + float2(0, uTexelSize.y)).a;
     a += tex2D(uImage0, uv + float2(0, -uTexelSize.y)).a;
+	float maxA = 0;
+	maxA = max(maxA, tex2D(uImage0, uv + float2(uTexelSize.x, 0)).a);
+	maxA = max(maxA, tex2D(uImage0, uv + float2(-uTexelSize.x, 0)).a);
+	maxA = max(maxA, tex2D(uImage0, uv + float2(0, uTexelSize.y)).a);
+	maxA = max(maxA, tex2D(uImage0, uv + float2(0, -uTexelSize.y)).a);
 
     if (a > 0) {
-        return uOutlineColor * color.a;
+        return uOutlineColor * color.a * maxA;
     }
 
     return float4(0, 0, 0, 0);

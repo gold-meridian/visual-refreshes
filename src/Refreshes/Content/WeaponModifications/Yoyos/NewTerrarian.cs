@@ -1,4 +1,6 @@
 ﻿using Daybreak.Common.Features.Hooks;
+using Daybreak.Common.Features.Models;
+using Daybreak.Common.Mathematics;
 using Daybreak.Common.Rendering;
 using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
@@ -12,15 +14,187 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.Graphics.Renderers;
 using Terraria.ID;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static Terraria.ModLoader.BackupIO;
 
 namespace Refreshes.Content.Yoyos;
 
 internal sealed class NewTerrarian : GlobalProjectile
 {
+    private sealed class TerrarianGasParticle : BaseParticle<TerrarianGasParticle>
+    {
+        public Vector2 Position { get; set; }
+        public Vector2 Velocity { get; set; }
+
+        public float Rotation { get; set; }
+        public float RotationSpeed { get; set; }
+
+        public Vector2 Scale { get; set; }
+
+        public int LifeTime { get; private set; }
+        public int MaxLifeTime { get; set; }
+        public float LifeTimeProgress => (float)LifeTime / MaxLifeTime;
+
+        public override void FetchFromPool()
+        {
+            base.FetchFromPool();
+
+            LifeTime = 0;
+        }
+
+        public override void Update(ref ParticleRendererSettings settings)
+        {
+            Position += Velocity;
+
+            Rotation += RotationSpeed;
+
+            LifeTime++;
+            if (LifeTime >= MaxLifeTime)
+            {
+                ShouldBeRemovedFromRenderer = true;
+            }
+        }
+
+        public override void Draw(ref ParticleRendererSettings settings, SpriteBatch spriteBatch)
+        {
+            const float start_size = 0.5f;
+            const float final_size = 0f;
+            const float start_alpha = 0f;
+            const float final_alpha = 0f;
+
+            var texture = Assets.Images.Particles.Circle.Asset.Value;
+            var origin = texture.Size() / 2;
+
+            var scaleMult = Bezier.Cubic(start_size, 0.5f, 0f, final_size, LifeTimeProgress);
+            var alphaMult = Bezier.Cubic(start_alpha, 1f, 0.5f, final_alpha, LifeTimeProgress);
+
+            spriteBatch.Draw(
+                new DrawParameters(texture)
+                {
+                    Position = Position + settings.AnchorPosition,
+                    Rotation = Angle.FromRadians(Rotation),
+                    Color = Color.White * alphaMult,
+                    Origin = origin,
+                    Scale = Scale * scaleMult,
+                }
+            );
+        }
+    }
+
+    private static RenderTargetLease? terrarian_gas_lease;
+    private static RenderTargetLease? terrarian_gas_shader_lease;
+    private static readonly ParticleRenderer terrarian_gas_particle_renderer = new();
+
+    [ModSystemHooks.PostUpdateEverything]
+    private static void UpdateParticles()
+    {
+        terrarian_gas_particle_renderer.Update();
+    }
+
+    public override void Load()
+    {
+        Main.RunOnMainThread(() =>
+            {
+                terrarian_gas_lease = ScreenspaceTargetPool.Shared.Rent(
+                    Main.instance.GraphicsDevice,
+                    (w, h) => (w / 2, h / 2)
+                );
+                terrarian_gas_shader_lease = ScreenspaceTargetPool.Shared.Rent(
+                    Main.instance.GraphicsDevice,
+                    (w, h) => (w / 2, h / 2)
+                );
+            }
+        );
+
+        On_Main.DrawProjectiles += DrawTerrarianGas;
+    }
+
+    public override void Unload()
+    {
+        Main.RunOnMainThread(() =>
+        {
+            terrarian_gas_lease?.Dispose();
+            terrarian_gas_shader_lease?.Dispose();
+        }
+    );
+
+        On_Main.DrawProjectiles -= DrawTerrarianGas;
+    }
+
+    private static void DrawTerrarianGas(On_Main.orig_DrawProjectiles orig, Main self)
+    {
+        if (terrarian_gas_lease == null || terrarian_gas_shader_lease == null)
+        {
+            orig(self);
+            return;
+        }
+
+        Main.spriteBatch.Begin();
+        Main.spriteBatch.End(out var ss);
+
+        using (terrarian_gas_lease.Scope(clearColor: Color.Transparent))
+        {
+            var gasShader = Assets.Shaders.Weapons.TerrarianGas.Asset.Value;
+            gasShader.Parameters["uTexture0"].SetValue(Assets.Images.Sample.PlantNoise.Asset.Value);
+            gasShader.Parameters["uTime"].SetValue(Main.GlobalTimeWrappedHourly);
+            gasShader.Parameters["uMultColor"].SetValue(new Vector4(0f, 0.2f, 0f, 1f));
+            gasShader.Parameters["uAddColor"].SetValue(new Vector4(0f, 0f, 0.2f, 1f));
+
+            Main.spriteBatch.Begin(ss with { SamplerState = SamplerState.PointClamp, TransformMatrix = Matrix.CreateScale(0.5f) });
+            terrarian_gas_particle_renderer.Settings.AnchorPosition = -Main.screenPosition;
+            terrarian_gas_particle_renderer.Draw(Main.spriteBatch);
+
+            Main.spriteBatch.End();
+        }
+
+        using (terrarian_gas_shader_lease.Scope(clearColor: Color.Transparent))
+        {
+            var gasShader = Assets.Shaders.Weapons.TerrarianGas.Asset.Value;
+            gasShader.Parameters["uTexture0"].SetValue(Assets.Images.Sample.LavaNoise_1.Asset.Value);
+            gasShader.Parameters["uTime"].SetValue(Main.GlobalTimeWrappedHourly * 0.2f);
+            gasShader.Parameters["uMultColor"].SetValue(new Vector4(0f, 0.5f, 0f, 1f));
+            gasShader.Parameters["uAddColor"].SetValue(new Vector4(0f, 0f, 0.3f, 0f));
+            gasShader.Parameters["uColorAmount"].SetValue(4f);
+
+            Main.spriteBatch.Begin(ss with { SamplerState = SamplerState.PointClamp, CustomEffect = gasShader });
+
+            Main.spriteBatch.Draw(
+                new DrawParameters(terrarian_gas_lease.Target)
+                {
+                    Position = Vector2.Zero,
+                    Scale = Vector2.One,
+                    Color = Color.White,
+                }
+            );
+
+            Main.spriteBatch.End();
+        }
+
+        using (Main.spriteBatch.Scope())
+        {
+            var outlineShader = Assets.Shaders.Outline.Asset.Value;
+            outlineShader.Parameters["uTexelSize"].SetValue(new Vector2(1f / terrarian_gas_shader_lease.Target.Width, 1f / terrarian_gas_shader_lease.Target.Height));
+            outlineShader.Parameters["uOutlineColor"].SetValue(new Color(0.4f, 1f, 0.6f).ToVector4());
+
+            Main.spriteBatch.Begin(ss with { SamplerState = SamplerState.PointClamp, TransformMatrix = Main.Transform, RasterizerState = Main.Rasterizer, CustomEffect = outlineShader });
+
+            Main.spriteBatch.Draw(
+                new DrawParameters(terrarian_gas_shader_lease.Target)
+                {
+                    Position = Vector2.Zero,
+                    Scale = Vector2.One * 2,
+                    Color = Color.White,
+                }
+            );
+        }
+
+        orig(self);
+    }
+
     private static readonly Color trail_color_start = new Color(0.4f, 1f, 0.6f) * 0.5f;
     private static readonly Color trail_color_end = new Color(0.4f, 0.6f, 1f) * 0.5f;
 
@@ -127,7 +301,7 @@ internal sealed class NewTerrarian : GlobalProjectile
                 Main.rand.NextFromList(previousPositions) + projectile.Size * 0.5f + Main.rand.NextVector2Circular(4f, 4f),
                 ModContent.DustType<LightDotRGB>(),
                 Main.rand.NextVector2Circular(4f, 4f),
-                Scale: 1f,
+                Scale: 1.5f,
                 newColor: Color.Lerp(Color.White, Color.SpringGreen, Main.rand.NextFloat())
             );
             dust.fadeIn = Main.rand.NextFloat(0.1f, 0.3f);
@@ -149,7 +323,24 @@ internal sealed class NewTerrarian : GlobalProjectile
         #endregion
 
         flareCounter += flare_phase;
-        flareCounter = flareCounter % 1f;
+        flareCounter %= 1f;
+
+        for (int i = 0; i < 2; i++)
+        {
+            var particle = TerrarianGasParticle.Pool.RequestParticle();
+
+            particle.Position = projectile.Center;
+            particle.Velocity = -projectile.velocity * 0.1f + Main.rand.NextVector2Circular(1f, 1f);
+
+            particle.Rotation = Main.rand.NextFloat(MathF.PI * 2f);
+            particle.RotationSpeed = Main.rand.NextFloat(-0.05f, 0.05f);
+
+            particle.Scale = new Vector2(Main.rand.NextFloat(2f, 3f));
+
+            particle.MaxLifeTime = Main.rand.Next(5, 15);
+
+            terrarian_gas_particle_renderer.Add(particle);
+        }
     }
 
     public override bool PreDraw(Projectile projectile, ref Color lightColor)
@@ -160,6 +351,7 @@ internal sealed class NewTerrarian : GlobalProjectile
 
         var textureCenter = yoyoTexture.Size() * 0.5f;
 
+        /*
         var trailTexture = TextureAssets.MagicPixel.Value;
 
         var trailShader = Assets.Shaders.SplittingTrail.CreateBasicTrailPass();
@@ -185,7 +377,7 @@ internal sealed class NewTerrarian : GlobalProjectile
         StripRenderer.DrawStripPadded(previousOffsetPositions, previousRotations, StripColorFunction, TrailWidth, projectile.Size * 0.5f - Main.screenPosition, false);
 
         Main.pixelShader.CurrentTechnique.Passes[0].Apply();
-
+        */
         var spriteDirection = projectile.spriteDirection == -1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
 
         Main.spriteBatch.Draw(yoyoTexture, projectile.Center - Main.screenPosition, null, projectile.GetAlpha(lightColor), projectile.rotation, textureCenter, projectile.scale, spriteDirection, 0f);
@@ -208,7 +400,7 @@ internal sealed class NewTerrarianBeam : GlobalProjectile
 
     private Color MainColor() => Main.hslToRgb(0.3f + Hue, 1f, 0.5f);
 
-    private float TrailWidth(float p) => float.Lerp(8f, 12f, p);
+    private float TrailWidth(float p) => float.Lerp(8f, 6f, p);
 
     public float Hue { get; private set; }
 
