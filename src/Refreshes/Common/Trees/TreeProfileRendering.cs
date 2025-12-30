@@ -1,5 +1,6 @@
 ﻿using System;
 using Daybreak.Common.Features.Hooks;
+using Daybreak.Common.Rendering;
 using JetBrains.Annotations;
 using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
@@ -308,6 +309,29 @@ internal sealed class TreeProfileRendering
                                 topTexture = gemProfile.Value.GetDescription(GemTreeRendering.RenderCtx.Value.CurrentBiome).Tops.Value;
                             }
 
+                            var wallTarget = Main.instance.wallTarget;
+                            
+                            var shader = Assets.Shaders.Misc.TreetopMask.CreateMask();
+                            
+                            shader.Parameters.targetsize = new(wallTarget.Width, wallTarget.Height);
+                            shader.Parameters.screenres = new(Main.screenWidth, Main.screenHeight);
+                            shader.Parameters.zoom = Main.GameViewMatrix.Zoom;
+                            shader.Parameters.screenposition = Main.screenPosition;
+                            shader.Parameters.scenewallpos = Main.sceneWallPos;
+                            shader.Parameters.walltarget = new()
+                            {
+                                Texture = wallTarget,
+                                Sampler = SamplerState.PointClamp,
+                            };
+                            shader.Apply();
+                            
+                            Main.spriteBatch.End(out var ss);
+                            Main.spriteBatch.Begin(ss with { 
+                                CustomEffect = shader.Shader, 
+                                TransformMatrix = Main.Transform,
+                                SamplerState = SamplerState.PointClamp 
+                            });
+                            
                             // draw treetop
                             Main.spriteBatch.Draw(
                                 topTexture,
@@ -320,6 +344,9 @@ internal sealed class TreeProfileRendering
                                 SpriteEffects.None,
                                 0f
                             );
+                            
+                            Main.spriteBatch.End();
+                            Main.spriteBatch.Begin(ss with { TransformMatrix = Main.Transform});
 
                             if (gemProfile.HasValue && GemTreeRendering.RenderCtx.HasValue)
                             {
