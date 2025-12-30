@@ -1,4 +1,4 @@
-using Daybreak.Common.Features.Hooks;
+﻿using Daybreak.Common.Features.Hooks;
 using JetBrains.Annotations;
 using Terraria.DataStructures;
 

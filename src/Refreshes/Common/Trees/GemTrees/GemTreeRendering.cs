@@ -1,4 +1,4 @@
-using Daybreak.Common.Features.Hooks;
+﻿using Daybreak.Common.Features.Hooks;
 using Terraria.DataStructures;
 using Terraria.GameContent.Drawing;
 using Terraria.ID;

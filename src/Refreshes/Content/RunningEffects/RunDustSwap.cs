@@ -31,12 +31,12 @@ internal static class RunDustSwap
                 {
                     return;
                 }
-                
+
                 var tilePos = position.ToTileCoordinates();
                 var tile = Main.tile[tilePos];
-                
+
                 if (tile.IsTileInvisible) return;
-                
+
                 var dust = Main.dust[WorldGen.KillTile_MakeTileDust(tilePos.X, tilePos.Y, tile)];
                 {
                     // Move up so the dust isn't at the center of the tile below the
@@ -48,7 +48,7 @@ internal static class RunDustSwap
                     dust.velocity.X = player.direction * 2;
 
                     dust.scale *= 0.8f;
-                    
+
                     if (tile.TileColor > PaintID.None)
                         dust.shader = GameShaders.Armor.GetSecondaryShader(tile.TileColor, player);
                 }

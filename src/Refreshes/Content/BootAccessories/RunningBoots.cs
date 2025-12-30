@@ -6,7 +6,7 @@ namespace Refreshes.Content;
 internal sealed class RunningBoots
 {
     [OnLoad]
-    private static void ApplyHooks() 
+    private static void ApplyHooks()
     {
         On_Player.RocketBootVisuals += On_PlayerOnRocketBootVisuals_UseCustomParticles;
     }

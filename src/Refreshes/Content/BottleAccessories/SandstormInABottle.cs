@@ -17,9 +17,9 @@ internal static class SandstormInABottle
 
     private static void OnStarted_SpawnOurSandstormParticles(SandstormInABottleJump _, Player player, ref bool playSound)
     {
-        
+
     }
-    
+
     [ModPlayerHooks.CanShowExtraJumpVisuals]
     public static bool CancelVanillaVisuals(ExtraJump jump)
     {
