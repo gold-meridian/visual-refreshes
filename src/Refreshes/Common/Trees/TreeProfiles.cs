@@ -313,7 +313,7 @@ public static class TreeProfiles
             [
                 new TreetopVariation(216, 190, new Vector2(2, -4)),
             ],
-            leafOffset: new Vector2(40, -70)
+            leafOffset: new Vector2(40, -72)
         );
     }
 }

@@ -239,7 +239,7 @@ internal sealed class TreeProfileRendering
 
                     switch (frameX)
                     {
-                        // tree top
+                        // tree top /
                         case 22:
                         {
                             var grassPosX = x + xOffset.Value;
@@ -275,7 +275,8 @@ internal sealed class TreeProfileRendering
 
                             var windIntensity = hasWall ? 0f : self.GetWindCycle(x, y, self._treeWindCounter) * treeProfile.WindScale;
                             {
-                                topPos.X += windIntensity * 2f;
+                                // This makes the treetops move super weirdly horizontally, and regardless of origin it looks like shit in high winds, so disabling it.
+                                //topPos.X += windIntensity * 2f;
                                 topPos.Y += Math.Abs(windIntensity) * 2f;
                             }
 
