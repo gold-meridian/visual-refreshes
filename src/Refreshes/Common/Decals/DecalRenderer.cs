@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Refreshes.Common.Decals;
+﻿namespace Refreshes.Common.Decals;
 
 public abstract class DecalRenderer : ModType
 {
@@ -14,6 +8,5 @@ public abstract class DecalRenderer : ModType
     }
     public ushort Type { get; internal set; }
 
-    public abstract void Draw(DecalData data, SpriteBatch spriteBatch);
-
+    public abstract void Draw(DecalData data, Tile tile, SpriteBatch spriteBatch);
 }

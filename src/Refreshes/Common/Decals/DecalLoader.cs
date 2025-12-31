@@ -49,10 +49,34 @@ public static class DecalLoader
             for (int j = start; j < end; j++) {
                 ref var decal = ref Decals[i * 64 + j];
                 if ((copy & 1ul << j) > 0)
-                    _decalRenderers[decal.Type].Draw(decal, Main.spriteBatch);
+                    _decalRenderers[decal.Type].Draw(decal, Main.tile[decal.Position], Main.spriteBatch);
             }
         }
         orig(self, behindTiles);
+    }
+    
+    [ModSystemHooks.PostUpdateWorld]
+    private static void ManageDecalLife()
+    {
+        if (Main.dedServ) return;
+
+        for (var i = 0; i < _decalActivity.Length; i++) {
+            ulong copy = _decalActivity[i];
+            if (copy == 0) continue;
+
+            while (copy != 0)
+            {
+                var j = BitOperations.TrailingZeroCount(copy);
+                var index = i * 64 + j;
+                ref var decal = ref Decals[index];
+
+                if (!Main.tile[decal.Position].HasTile) {
+                    _decalActivity[i] &= ~(1UL << j);
+                }
+
+                copy &= ~(1UL << j);
+            }
+        }
     }
     
     //todo
@@ -69,20 +93,5 @@ public static class DecalLoader
                 }
             }
         }
-    }
-}
-
-internal sealed class TestRenderer : DecalRenderer
-{
-    
-    public override void Draw(DecalData data, SpriteBatch spriteBatch) {
-        var worldPos = data.Position.ToWorldCoordinates(new Vector2(8f, 8f));
-        
-        var screenPos = worldPos - Main.screenPosition;
-
-        var tex = TextureAssets.Item[50].Value;
-        var origin = tex.Size() / 2f;
-
-        spriteBatch.Draw(tex, screenPos, null, Color.White, data.Rotation, origin, data.Scale, SpriteEffects.None, 0f);
     }
 }
