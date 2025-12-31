@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Terraria.GameContent;
+using Terraria.ID;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace Refreshes.Common.Decals;
@@ -19,12 +20,15 @@ public static class DecalLoader
     [OnLoad]
     private static void LoadDecalTypes()
     {
+        ushort rendererCount = 0;
         foreach(var mod in ModLoader.Mods)
         {
             var renderers = mod.GetContent<DecalRenderer>();
             foreach (var renderer in renderers)
             {
+                renderer.Type = rendererCount;
                 _decalRenderers[renderer.Type] = renderer;
+                rendererCount++;
             }
         }
         On_Main.DrawNPCs += On_Main_DrawNPCs_DrawDecals;
@@ -44,7 +48,8 @@ public static class DecalLoader
             
             for (int j = start; j < end; j++) {
                 ref var decal = ref Decals[i * 64 + j];
-                _decalRenderers[decal.Type].Draw(decal, Main.spriteBatch);
+                if ((copy & 1ul << j) > 0)
+                    _decalRenderers[decal.Type].Draw(decal, Main.spriteBatch);
             }
         }
         orig(self, behindTiles);
@@ -69,7 +74,6 @@ public static class DecalLoader
 
 internal sealed class TestRenderer : DecalRenderer
 {
-    public override ushort Type => 0;
     
     public override void Draw(DecalData data, SpriteBatch spriteBatch) {
         var worldPos = data.Position.ToWorldCoordinates(new Vector2(8f, 8f));

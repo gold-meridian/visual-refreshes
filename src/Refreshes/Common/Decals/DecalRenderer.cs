@@ -12,7 +12,7 @@ public abstract class DecalRenderer : ModType
     {
         ModTypeLookup<DecalRenderer>.Register(this);
     }
-    public abstract ushort Type { get; }
+    public ushort Type { get; internal set; }
 
     public abstract void Draw(DecalData data, SpriteBatch spriteBatch);
 
