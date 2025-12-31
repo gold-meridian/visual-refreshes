@@ -1,14 +1,7 @@
 ﻿using Daybreak.Common.Features.Hooks;
-using Microsoft.Xna.Framework.Content;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria.GameContent;
-using Terraria.GameContent.Drawing;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace Refreshes.Common.Decals;
@@ -31,15 +24,10 @@ public static class DecalLoader
             var renderers = mod.GetContent<DecalRenderer>();
             foreach (var renderer in renderers)
             {
-
                 _decalRenderers[renderer.Type] = renderer;
             }
         }
         On_Main.DrawNPCs += On_Main_DrawNPCs_DrawDecals;
-#if DEBUG
-        Decals[0] = new DecalData(false, 0, new Point(50, 10), 0, new Microsoft.Xna.Framework.Vector2(2), default(FramingData));
-        _decalActivity[0] = 1;
-#endif
     }
 
     private static void On_Main_DrawNPCs_DrawDecals(On_Main.orig_DrawNPCs orig, Main self, bool behindTiles)
@@ -60,6 +48,22 @@ public static class DecalLoader
             }
         }
         orig(self, behindTiles);
+    }
+    
+    //todo
+    public static void AddDecal(DecalData data) {
+        for (var i = 0; i < _decalActivity.Length; i++) {
+
+            for (var j = 0; j < 64; j++) {
+                var mask = 1UL << j;
+                if ((_decalActivity[i] & mask) == 0) {
+                    var index = i * 64 + j;
+                    Decals[index] = data;
+                    _decalActivity[i] |= mask;
+                    return;
+                }
+            }
+        }
     }
 }
 

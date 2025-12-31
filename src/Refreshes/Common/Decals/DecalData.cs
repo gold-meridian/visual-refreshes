@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Refreshes.Common.Decals;
 
-namespace Refreshes.Common.Decals;
 /// <summary>
 ///     Structure representing in-world decal data for rendering
 /// </summary>>
