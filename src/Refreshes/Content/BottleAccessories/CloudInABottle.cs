@@ -167,9 +167,14 @@ internal static class CloudInABottle
     }
 
     [ModPlayerHooks.CanShowExtraJumpVisuals]
-    public static bool CancelVanillaVisuals(ExtraJump jump)
+    public static bool CancelVanillaVisuals(ModPlayerHooks.CanShowExtraJumpVisuals.Original orig, ModPlayer self, ExtraJump jump)
     {
-        return jump != ExtraJump.CloudInABottle;
+        if (jump != ExtraJump.CloudInABottle)
+        {
+            return orig(jump);
+        }
+        
+        return false;
     }
 
     [PoolCapacity(300)]
